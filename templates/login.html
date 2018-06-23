@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+{% endblock %}
+{% block custom_container %}
+<div class="login-background">
+{% block content %}
+
+    <div id="login" class="signin-card" style="margin-top:330px;">
+        <div class="logo-image">
+            <img src="http://output.dogannet.tv/_nuxt/img/logo-white.b3d4140.png" alt="Logo" title="Logo" width="138">
+        </div>
+        <h1 class="display1">Input Project</h1>
+        <form action="/login" method="POST" class="" role="form">
+            <div id="form-login-username" class="form-group">
+                <input id="username" class="form-control" name="username" placeholder="Username" type="text" size="18"
+                       alt="login" required/>
+                <span class="form-highlight"></span>
+                <span class="form-bar"></span>
+            </div>
+            <div id="form-login-password" class="form-group">
+                <input id="password" class="form-control" name="password" placeholder="Password" type="password"
+                       size="18" alt="password" required>
+                <span class="form-highlight"></span>
+                <span class="form-bar"></span>
+            </div>
+            <div>
+                <button class="btn btn-block btn-primary ripple-effect" type="submit" name="Submit">Login</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+</div>
+{% endblock %}

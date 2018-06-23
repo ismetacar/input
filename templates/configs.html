@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Jobs{% endblock %}
+{% block head %}
+    <link href="{{ url_for('static', filename='styles/bootstrap.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block header %}
+    {% include "header.html" %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-6"><h1>Configurations</h1></div>
+        <div class="col-md-6 text-right">
+            <a href="/configs/create" role="button" class="btn btn-default border">
+                <span>Oluştur</span>
+            </a>
+        </div>
+    </div>
+    <br>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Url</th>
+            <th scope="col">Domain</th>
+            <th scope="col">Content Type</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for config in configs %}
+            <tr>
+                <td>{{ config['name'] }}</td>
+                <td>{{ config['input_url'] }}</td>
+                <td>{{ config['domain']['name'] }}</td>
+                <td>{{ config['content_type']['name'] }}</td>
+                <td>
+                    <a style="color:#1f3b8b;" href="{{ url_for('config', config_id=config['_id']) }}"><i class="fa fa-edit"></i></a>
+                    <a style="color:darkred; margin-left:10px;"
+                       href="{{ url_for('config_delete', config_id=config['_id']) }}"><i class="fa fa-trash"></i></a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

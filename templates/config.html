@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Config{% endblock %}
+{% block head %}
+    <link href="{{ url_for('static', filename='styles/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="{{ url_for('static', filename='js/configuration_form_helpers.js') }}"></script>
+    <script>
+        function getInputFields() {
+            mapping_div = document.getElementById('mapping_form');
+            mapping_div.style.display = 'block';
+            var content_type_id = document.getElementById('content_type').value;
+            var domain_id = document.getElementById('domain').value;
+            var input_url = document.getElementById('input_url').value;
+            getFieldDefinition(content_type_id, domain_id, input_url);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            {% if agency_config %}
+                setFields({{ agency_config|tojson }});
+            {% endif %}
+
+            const form = document.querySelector('#configuration_form');
+            form.addEventListener("focus", function (event) {
+                let formValidation = Array.from(document.querySelectorAll('[required]')).filter(x => x.value === "").length === 0;
+                document.querySelector('.mapping-btn ').disabled = !formValidation;
+            }, true);
+        });
+
+    </script>
+{% endblock %}
+
+{% block header %}
+    {% include "header.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-6"><h1>Config</h1></div>
+        <div class="col-md-6 text-right">
+            <button type="submit" form="configuration_form" class="btn btn-default border"><span>Kaydet</span></button>
+        </div>
+    </div>
+    <hr>
+    <form name="configuration_form" id="configuration_form"
+            {% if agency_config %}  action="{{ url_for('config_edit', config_id=agency_config['_id']) }}" {% else %}
+          action="{{ url_for('configs_create') }}" {% endif %}
+          method="POST">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" name="name" id="name" placeholder="Name" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="input_url">Agency Url</label>
+                <input type="text" class="form-control" name="input_url" id="input_url" placeholder="http://..."
+                       required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="domain">Domain</label>
+                <select name="domain" id="domain" class="form-control"
+                        onchange="setContentTypes('{{ token }}', '{{ management_api }}')" required>
+                    <option selected>Choose...</option>
+                    {% for domain in domains %}
+                        <option value="{{ domain['_id'] }}">{{ domain['name'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="content_type">Content Type</label>
+                <select name="content_type" id="content_type" class="form-control" required>
+                    <option selected>Choose...</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" name="username" id="username" placeholder="Username" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" name="password" id="password" placeholder="Password"
+                       required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="run_job_at">Run Job Interval</label>
+                <input class="form-control" type="number" name="sync_at" id="sync_at" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="run_job_at">Path</label>
+                <input class="form-control" type="text" name="path" id="path" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label class="form-check-label" for="publish">Publish</label>
+                <input class="form-check-input" style="margin-left:10px;" type="checkbox" id="publish" name="publish"
+                       id="publish">
+            </div>
+        </div>
+
+        <br>
+        <div class="row">
+            <div class="col-md-2">
+                <button class="mapping-btn btn btn-primary" onclick="getInputFields();" disabled>Mapping</button>
+            </div>
+        </div>
+
+        <div id="mapping_form" style="display: none">
+
+        </div>
+    </form>
+
+{% endblock %}

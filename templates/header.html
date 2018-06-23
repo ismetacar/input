@@ -1,0 +1,28 @@
+<div class="container" style="width: 55%">
+    <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white">
+        <div class="col-12 col-md-12 text-left text-md-center">
+            <a href="/">
+                <img src="http://output.dogannet.tv/_nuxt/img/logo.917792e.png" class="align-content-center"
+                     style="width: 18%">
+            </a>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+                {% if user_profile_image %}
+                    <img src="{{ asset_service_url }}/75/30x30/{{ user_profile_image }}" class="rounded-circle">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/default_user.png') }}" width="30" height="30" class="rounded-circle">
+                {% endif %}
+            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" href="/configs">Inputs</a>
+                <a class="dropdown-item" href="/Jobs">Jobs</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/logout">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>

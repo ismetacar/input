@@ -1,0 +1,19 @@
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #141e3c;
+    color: white;
+    text-align: center;
+}
+
+.login-background {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    background: url(/static/images/login-background.png);
+    background-clip: content-box;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
