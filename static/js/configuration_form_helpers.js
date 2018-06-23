@@ -73,7 +73,28 @@ function getFieldDefinition(content_type_id, domain_id, input_url) {
         },
         dataType: 'json',
         success: function (data) {
-            labelListHtml = "<hr><div class='row'><div class='col-md-4'><label>Content Type</label></div><div class='col-md-6'><label>Agency Fields</label></div></div><br>";
+            labelListHtml = "<hr>" +
+                "<div class='row'>" +
+                "<div class='col-md-4'>" +
+                "<label>Content Type</label>" +
+                "</div>" +
+                "<div class='col-md-6'>" +
+                "<label>Agency Fields</label>" +
+                "</div>" +
+                "</div><br>";
+
+            data.field_definitions.splice(0, 0, {
+                'name': 'Başlık',
+                'field_id': 'title',
+                'type': 'string',
+                'required': 'true'
+            });
+            data.field_definitions.splice(1, 0, {
+                'name': 'Açıklama',
+                'field_id': 'description',
+                'type': 'string',
+                'required': 'true'
+            });
             data.field_definitions.forEach(function (item) {
 
 
@@ -81,22 +102,21 @@ function getFieldDefinition(content_type_id, domain_id, input_url) {
                 itemLabelStr = "<label>" + item.name + ":" + "</label>";
                 itemDivEndStr = "</div>";
 
-                selectItems = "<div class='col-md-6'><select name=" + item.name + " id=" + item.name + "class='form-control'";
+                selectItems = "<div class='form-group col-md-6'><select name=" + item.field_id + " id=" + item.name + "class='form-control'";
                 if (item.required) {
                     selectItems += " required><option value=''></option>";
                 } else {
                     selectItems += "><option value=''></option>;"
                 }
-                data.agency_fields.forEach(function (selectItem)
-                {
-                  itemSelectPart = "<option value=" + selectItem + ">" + selectItem + "</option>";
-                  selectItems += itemSelectPart;
+                data.agency_fields.forEach(function (selectItem) {
+                    itemSelectPart = "<option value=" + selectItem + ">" + selectItem + "</option>";
+                    selectItems += itemSelectPart;
                 });
                 selectItems += "</select></div>";
 
                 labelListHtml += itemDivStr + itemLabelStr + itemDivEndStr + selectItems + itemDivEndStr;
             });
-            document.getElementById("mapping_form").innerHTML = labelListHtml;
+            document.getElementById("mapping_form").innerHTML = labelListHtml + "<hr>";
 
             return data
         },
