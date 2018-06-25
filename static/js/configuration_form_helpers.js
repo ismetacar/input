@@ -10,7 +10,7 @@ function SetSelectValue(element_id, text, value) {
 function setFields(agency_config) {
     if (!agency_config) return;
 
-    let arr = ['agency', 'username', 'password', 'input_url', 'domain', 'sync_at', 'path'];
+    let arr = ['agency', 'username', 'password', 'input_url', 'domain', 'sync_at', 'path', 'username_parameter', 'password_parameter'];
 
     for (item of arr) {
         if (item === 'domain') {
@@ -149,6 +149,7 @@ function rssResponse(input_url, username, password, agency_config) {
             'password': password
         },
         success: function (data) {
+
             field_ids = [];
             len = window.field_definitions.length;
             for (var i = 0; i < len; i++) {
@@ -171,7 +172,9 @@ function rssResponse(input_url, username, password, agency_config) {
             $('html, body').animate({
                 scrollTop: $("#preview_row").offset().top
             }, 2000);
-        },
+        }
+
+        ,
         error: function (data) {
             console.log(data)
         }
