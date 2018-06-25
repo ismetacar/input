@@ -94,21 +94,14 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
                 'type': 'string',
                 'required': 'true'
             });
-            /* window.field_definitions.splice(2, 0, {
-                'name': 'Unique Field',
-                'field_id': 'unique_field',
-                'type': 'string',
-                'required': 'true'
-            }); */
 
             window.field_definitions.forEach(function (item) {
-
 
                 var itemDivStr = "<div class='row' id='mapping_form_div'><div class='col-md-4' id='mapping_form_label' style='margin-top: 12px;'>";
                 var itemLabelStr = "<label>" + item.name + ":" + "</label>";
                 var itemDivEndStr = "</div>";
 
-                var selectItems = '<div class="form-group col-md-6"><select name="' + item.field_id + '" id="' + item.field_id + '" class="form-control"';
+                var selectItems = '<div class="form-group col-md-6"><select onchange="getRssResponse();" name="' + item.field_id + '" id="' + item.field_id + '" class="form-control"';
                 selectItems += "><option value=''></option>";
 
                 data.agency_fields.forEach(function (selectItem) {
@@ -163,10 +156,9 @@ function rssResponse(input_url, username, password, agency_config) {
             }
 
             mapped_fields = {};
-            len = field_ids.length;
-            for (var i = 0; i < len; i++) {
-                mapped_fields[field_ids[i]] = agency_config[field_ids[i]];
-            }
+            field_ids.forEach(function (field_id) {
+                mapped_fields[field_id] = document.getElementById(field_id).value;
+            });
 
             pre_json = {};
             for (var i = 0; i < len; i++) {
