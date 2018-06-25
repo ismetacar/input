@@ -152,7 +152,7 @@ def init_view(app, settings):
             content_type_id = body['content_type_id']
             domain_id = body['domain_id']
             agency_fields = app.db.agency_fields.find_one({
-                'agency_url': body['input_url']
+                'name': body['agency']
             })
 
             url = settings['management_api'] + '/domains/' + domain_id + '/content-types/' + content_type_id

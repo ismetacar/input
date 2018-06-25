@@ -10,8 +10,8 @@
             mapping_div.style.display = 'block';
             var content_type_id = document.getElementById('content_type').value;
             var domain_id = document.getElementById('domain').value;
-            var input_url = document.getElementById('input_url').value;
-            getFieldDefinition(content_type_id, domain_id, input_url);
+            var agency_name = document.getElementById('agency').value;
+            getFieldDefinition(content_type_id, domain_id, agency_name);
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -50,8 +50,12 @@
           method="POST">
         <div class="form-row">
             <div class="form-group col-md-6">
-                <label for="name">Name</label>
-                <input type="text" class="form-control" name="name" id="name" placeholder="Name" required>
+                <label for="domain">Agency</label>
+                <select name="agency" id="agency" class="form-control" required>
+                    <option selected>IHA</option>
+                    <option selected>AA</option>
+                    <option selected>DHA</option>
+                </select>
             </div>
             <div class="form-group col-md-6">
                 <label for="input_url">Agency Url</label>
@@ -106,7 +110,7 @@
             </div>
         </div>
 
-        <div class="form-row" id="mapping_form"  style="display: none">
+        <div class="form-row fields-card" id="mapping_form" style="display: none">
 
         </div>
     </form>

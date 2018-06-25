@@ -10,19 +10,21 @@ function set_select_value(element_id, text, value) {
 function setFields(agency_config) {
     if (!agency_config) return;
 
-    document.getElementById('name').value = agency_config.name;
-    document.getElementById('username').value = agency_config.username;
-    document.getElementById('password').value = agency_config.password;
-    document.getElementById('input_url').value = agency_config.input_url;
-    document.getElementById("domain").value = agency_config.domain._id;
-    document.getElementById("sync_at").value = agency_config.sync_at;
-    document.getElementById("path").value = agency_config.path;
-    if (agency_config.publish === "on") {
-        document.getElementById("publish").checked = true;
+    let arr = ['agency', 'username', 'password', 'input_url', 'domain', 'sync_at', 'path'];
+
+    for(item of arr) {
+        if (item === 'domain') {
+            document.getElementById(item).value = agency_config[item]._id;
+        } else {
+            document.getElementById(item).value = agency_config[item];
+        }
     }
-    else {
-        document.getElementById("publish").checked = false;
-    }
+
+    document.getElementById("publish").checked = agency_config.publish === "on";
+
+    var formValidation = Array.from(document.querySelectorAll('[required]')).filter(x => x.value === "").length === 0;
+    document.querySelector('.mapping-btn ').disabled = !formValidation;
+
     set_select_value('content_type', agency_config.content_type.name, agency_config.content_type._id);
 
 }
@@ -60,7 +62,7 @@ function setContentTypes(token, management_api) {
 
 }
 
-function getFieldDefinition(content_type_id, domain_id, input_url) {
+function getFieldDefinition(content_type_id, domain_id, agency_name) {
     var url = '/configs/mapping';
 
     $.ajax({
@@ -69,17 +71,17 @@ function getFieldDefinition(content_type_id, domain_id, input_url) {
         data: {
             'content_type_id': content_type_id,
             'domain_id': domain_id,
-            'input_url': input_url
+            'agency': agency_name
         },
         dataType: 'json',
         success: function (data) {
-            labelListHtml = "<hr>" +
+            labelListHtml =
                 "<div class='row'>" +
                 "<div class='col-md-4'>" +
-                "<label>Content Type</label>" +
+                "<label><b>Content Type's Fields</b></label>" +
                 "</div>" +
                 "<div class='col-md-6'>" +
-                "<label>Agency Fields</label>" +
+                "<label><b>RSS's Fields</b></label>" +
                 "</div>" +
                 "</div><br>";
 
@@ -102,7 +104,7 @@ function getFieldDefinition(content_type_id, domain_id, input_url) {
                 itemLabelStr = "<label>" + item.name + ":" + "</label>";
                 itemDivEndStr = "</div>";
 
-                selectItems = "<div class='form-group col-md-6'><select name=" + item.field_id + " id=" + item.name + "class='form-control'";
+                selectItems = '<div class="form-group col-md-6"><select name="' + item.field_id + '" id="' + item.name + '" class="form-control"';
                 if (item.required) {
                     selectItems += " required><option value=''></option>";
                 } else {
@@ -116,7 +118,7 @@ function getFieldDefinition(content_type_id, domain_id, input_url) {
 
                 labelListHtml += itemDivStr + itemLabelStr + itemDivEndStr + selectItems + itemDivEndStr;
             });
-            document.getElementById("mapping_form").innerHTML = labelListHtml + "<hr>";
+            document.getElementById("mapping_form").innerHTML = labelListHtml;
 
             return data
         },
