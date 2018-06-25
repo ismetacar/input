@@ -9,8 +9,10 @@
             var input_url = document.getElementById('input_url').value;
             var username = document.getElementById('username').value;
             var password = document.getElementById('password').value;
+            var username_parameter = document.getElementById('username_parameter').value;
+            var password_parameter = document.getElementById('password_parameter').value;
 
-            rssResponse(input_url, username, password, {{ agency_config|tojson }})
+            rssResponse(input_url, username, password, username_parameter, password_parameter)
         }
 
         function getInputFields() {

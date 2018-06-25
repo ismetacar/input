@@ -181,7 +181,8 @@ def init_view(app, settings):
     def get_agency_rss():
         body = request.form.to_dict()
 
-        url = body['input_url'] + '&UserName={}&UserPassword={}'.format(body['username'], body['password'])
+        url = body['input_url'] + '&{}={}&{}={}'.format(body['username_parameter'], body['username'],
+                                                        body['password_parameter'], body['password'])
 
         response = requests.get(url)
         if response.status_code != 200:

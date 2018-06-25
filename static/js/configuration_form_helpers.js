@@ -136,7 +136,7 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
     });
 }
 
-function rssResponse(input_url, username, password, agency_config) {
+function rssResponse(input_url, username, password, username_parameter, password_parameter) {
     var url = '/rss';
 
     $.ajax({
@@ -146,7 +146,9 @@ function rssResponse(input_url, username, password, agency_config) {
         data: {
             'input_url': input_url,
             'username': username,
-            'password': password
+            'password': password,
+            'username_parameter': username_parameter,
+            'password_parameter': password_parameter,
         },
         success: function (data) {
 
