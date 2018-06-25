@@ -1,4 +1,4 @@
-function set_select_value(element_id, text, value) {
+function SetSelectValue(element_id, text, value) {
     var elem = document.getElementById(element_id);
     var option = document.createElement("option");
     option.text = text;
@@ -12,7 +12,7 @@ function setFields(agency_config) {
 
     let arr = ['agency', 'username', 'password', 'input_url', 'domain', 'sync_at', 'path'];
 
-    for(item of arr) {
+    for (item of arr) {
         if (item === 'domain') {
             document.getElementById(item).value = agency_config[item]._id;
         } else {
@@ -20,18 +20,14 @@ function setFields(agency_config) {
         }
     }
 
-    document.getElementById("publish").checked = agency_config.publish === "on";
-
     var formValidation = Array.from(document.querySelectorAll('[required]')).filter(x => x.value === "").length === 0;
     document.querySelector('.mapping-btn ').disabled = !formValidation;
 
-    set_select_value('content_type', agency_config.content_type.name, agency_config.content_type._id);
+    SetSelectValue('content_type', agency_config.content_type.name, agency_config.content_type._id);
 
 }
 
 function setContentTypes(token, management_api) {
-    var token = token;
-    var management_api = management_api;
     var url = management_api + '/domains/' + document.getElementById('domain').value + '/content-types/_query';
     $.ajax({
         url: url,
@@ -62,7 +58,7 @@ function setContentTypes(token, management_api) {
 
 }
 
-function getFieldDefinition(content_type_id, domain_id, agency_name) {
+function getFieldDefinition(content_type_id, domain_id, agency_name, agency_config) {
     var url = '/configs/mapping';
 
     $.ajax({
@@ -75,7 +71,8 @@ function getFieldDefinition(content_type_id, domain_id, agency_name) {
         },
         dataType: 'json',
         success: function (data) {
-            labelListHtml =
+            window.field_definitions = data.field_definitions;
+            var labelListHtml =
                 "<div class='row'>" +
                 "<div class='col-md-4'>" +
                 "<label><b>Content Type's Fields</b></label>" +
@@ -85,31 +82,35 @@ function getFieldDefinition(content_type_id, domain_id, agency_name) {
                 "</div>" +
                 "</div><br>";
 
-            data.field_definitions.splice(0, 0, {
+            window.field_definitions.splice(0, 0, {
                 'name': 'Başlık',
                 'field_id': 'title',
                 'type': 'string',
                 'required': 'true'
             });
-            data.field_definitions.splice(1, 0, {
+            window.field_definitions.splice(1, 0, {
                 'name': 'Açıklama',
                 'field_id': 'description',
                 'type': 'string',
                 'required': 'true'
             });
-            data.field_definitions.forEach(function (item) {
+            /* window.field_definitions.splice(2, 0, {
+                'name': 'Unique Field',
+                'field_id': 'unique_field',
+                'type': 'string',
+                'required': 'true'
+            }); */
+
+            window.field_definitions.forEach(function (item) {
 
 
-                itemDivStr = "<div class='row' id='mapping_form_div'><div class='col-md-4' id='mapping_form_label' style='margin-top: 12px;'>";
-                itemLabelStr = "<label>" + item.name + ":" + "</label>";
-                itemDivEndStr = "</div>";
+                var itemDivStr = "<div class='row' id='mapping_form_div'><div class='col-md-4' id='mapping_form_label' style='margin-top: 12px;'>";
+                var itemLabelStr = "<label>" + item.name + ":" + "</label>";
+                var itemDivEndStr = "</div>";
 
-                selectItems = '<div class="form-group col-md-6"><select name="' + item.field_id + '" id="' + item.name + '" class="form-control"';
-                if (item.required) {
-                    selectItems += " required><option value=''></option>";
-                } else {
-                    selectItems += "><option value=''></option>;"
-                }
+                var selectItems = '<div class="form-group col-md-6"><select name="' + item.field_id + '" id="' + item.field_id + '" class="form-control"';
+                selectItems += "><option value=''></option>";
+
                 data.agency_fields.forEach(function (selectItem) {
                     itemSelectPart = "<option value=" + selectItem + ">" + selectItem + "</option>";
                     selectItems += itemSelectPart;
@@ -117,8 +118,22 @@ function getFieldDefinition(content_type_id, domain_id, agency_name) {
                 selectItems += "</select></div>";
 
                 labelListHtml += itemDivStr + itemLabelStr + itemDivEndStr + selectItems + itemDivEndStr;
+
             });
+
             document.getElementById("mapping_form").innerHTML = labelListHtml;
+
+            document.getElementById('preview_button').style.display = 'block';
+
+            var field_ids = [];
+            var len = window.field_definitions.length;
+            for (var i = 0; i < len; i++) {
+                field_ids.push(window.field_definitions[i].field_id);
+            }
+
+            field_ids.forEach(function (field_id) {
+                document.getElementById(field_id).value = agency_config[field_id];
+            });
 
             return data
         },
@@ -126,4 +141,47 @@ function getFieldDefinition(content_type_id, domain_id, agency_name) {
             console.info(data);
         }
     });
+}
+
+function rssResponse(input_url, username, password, agency_config) {
+    var url = '/rss';
+
+    $.ajax({
+        url,
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            'input_url': input_url,
+            'username': username,
+            'password': password
+        },
+        success: function (data) {
+            field_ids = [];
+            len = window.field_definitions.length;
+            for (var i = 0; i < len; i++) {
+                field_ids.push(window.field_definitions[i].field_id);
+            }
+
+            mapped_fields = {};
+            len = field_ids.length;
+            for (var i = 0; i < len; i++) {
+                mapped_fields[field_ids[i]] = agency_config[field_ids[i]];
+            }
+
+            pre_json = {};
+            for (var i = 0; i < len; i++) {
+                pre_json[field_ids[i]] = data[mapped_fields[field_ids[i]]];
+            }
+
+            document.getElementById('preview_row').innerHTML = "<pre>" + JSON.stringify(pre_json, undefined, 4) + "</pre>";
+            document.getElementById('preview_row').style.display = 'block';
+
+            $('html, body').animate({
+                scrollTop: $("#preview_row").offset().top
+            }, 2000);
+        },
+        error: function (data) {
+            console.log(data)
+        }
+    })
 }

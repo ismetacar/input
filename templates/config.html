@@ -5,13 +5,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="{{ url_for('static', filename='js/configuration_form_helpers.js') }}"></script>
     <script>
+        function getRssResponse() {
+            var input_url = document.getElementById('input_url').value;
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            rssResponse(input_url, username, password, {{ agency_config|tojson }})
+        }
+
         function getInputFields() {
             mapping_div = document.getElementById('mapping_form');
             mapping_div.style.display = 'block';
             var content_type_id = document.getElementById('content_type').value;
             var domain_id = document.getElementById('domain').value;
             var agency_name = document.getElementById('agency').value;
-            getFieldDefinition(content_type_id, domain_id, agency_name);
+            getFieldDefinition(content_type_id, domain_id, agency_name, {{ agency_config|tojson }});
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -102,22 +110,22 @@
                 <input class="form-control" type="text" name="path" id="path" required>
             </div>
         </div>
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label class="form-check-label" for="publish">Publish</label>
-                <input class="form-check-input" style="margin-left:10px;" type="checkbox" id="publish" name="publish"
-                       id="publish">
-            </div>
-        </div>
 
         <div class="form-row fields-card" id="mapping_form" style="display: none">
 
         </div>
     </form>
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-1">
             <button class="btn btn-primary mapping-btn" onclick="getInputFields();" disabled>Mapping</button>
         </div>
+        <div class="col-md-1" id="preview_button" style="display: none;">
+            <button class="btn btn-primary mapping-btn" onclick="getRssResponse();">Preview</button>
+        </div>
+    </div>
+    <br>
+    <div class="row fields-card" id="preview_row" style="display: none">
+
     </div>
 
 {% endblock %}

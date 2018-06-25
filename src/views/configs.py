@@ -4,7 +4,9 @@ import requests
 from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
 
+from src.helpers.input import parse_response_text
 from src.helpers.user import get_user_domains, get_domain_by_id, get_content_type_by_id
+from src.utils.errors import BlupointError
 
 
 def init_view(app, settings):
@@ -171,3 +173,25 @@ def init_view(app, settings):
                 fields['agency_fields'] = agency_fields.get('fields', [])
 
             return Response(json.dumps(fields), mimetype='application/json')
+
+    @app.route(
+        '/rss',
+        methods=['GET', 'POST']
+    )
+    def get_agency_rss():
+        body = request.form.to_dict()
+
+        url = body['input_url'] + '&UserName={}&UserPassword={}'.format(body['username'], body['password'])
+
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise BlupointError(
+                err_msg="Agency Rss did not return 200",
+                err_code="errors.InvalidUsage",
+                status_code=response.status_code
+            )
+        response_json = parse_response_text(response.text)
+        response_json = json.loads(response_json)
+        r = response_json['rss']['channel']['item'][0]
+
+        return Response(json.dumps(r), mimetype='application/json')

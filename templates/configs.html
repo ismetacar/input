@@ -20,7 +20,7 @@
     <table class="table">
         <thead>
         <tr>
-            <th scope="col">Name</th>
+            <th scope="col">Agency</th>
             <th scope="col">Url</th>
             <th scope="col">Domain</th>
             <th scope="col">Content Type</th>
@@ -31,7 +31,7 @@
 
         {% for config in configs %}
             <tr>
-                <td>{{ config['name'] }}</td>
+                <td>{{ config['agency'] }}</td>
                 <td>{{ config['input_url'] }}</td>
                 <td>{{ config['domain']['name'] }}</td>
                 <td>{{ config['content_type']['name'] }}</td>
