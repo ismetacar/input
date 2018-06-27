@@ -4,7 +4,7 @@ import os
 import requests
 from flask import flash, session, request, url_for, redirect
 
-from src import create_app
+from src import create_app, make_celery
 from src.utils.errors import BlupointError
 from src.utils.json_jelpers import parse_boolean
 
@@ -19,6 +19,8 @@ def config_settings():
 
 settings = config_settings()
 app = create_app(settings)
+
+celery = make_celery(app)
 
 
 @app.before_request

@@ -10,7 +10,7 @@ function SetSelectValue(element_id, text, value) {
 function setFields(agency_config) {
     if (!agency_config) return;
 
-    let arr = ['agency', 'username', 'password', 'input_url', 'domain', 'sync_at', 'path', 'username_parameter', 'password_parameter'];
+    let arr = ['agency_name', 'username', 'password', 'cms_username', 'cms_password','input_url', 'domain', 'sync_at', 'path', 'username_parameter', 'password_parameter'];
 
     for (item of arr) {
         if (item === 'domain') {
@@ -22,6 +22,8 @@ function setFields(agency_config) {
 
     var formValidation = Array.from(document.querySelectorAll('[required]')).filter(x => x.value === "").length === 0;
     document.querySelector('.mapping-btn ').disabled = !formValidation;
+
+    showAuthFields(agency_config.agency_name);
 
     SetSelectValue('content_type', agency_config.content_type.name, agency_config.content_type._id);
 
@@ -67,7 +69,7 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
         data: {
             'content_type_id': content_type_id,
             'domain_id': domain_id,
-            'agency': agency_name
+            'agency_name': agency_name
         },
         dataType: 'json',
         success: function (data) {
@@ -116,7 +118,7 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
 
             document.getElementById("mapping_form").innerHTML = labelListHtml;
 
-            document.getElementById('preview_button').style.display = 'block';
+            document.getElementById('preview_button').classList.remove('d-none');
 
             var field_ids = [];
             var len = window.field_definitions.length;
@@ -136,7 +138,7 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
     });
 }
 
-function rssResponse(input_url, username, password, username_parameter, password_parameter) {
+function rssResponse(input_url, username, password, agency_name) {
     var url = '/rss';
 
     $.ajax({
@@ -147,8 +149,7 @@ function rssResponse(input_url, username, password, username_parameter, password
             'input_url': input_url,
             'username': username,
             'password': password,
-            'username_parameter': username_parameter,
-            'password_parameter': password_parameter,
+            'agency_name': agency_name
         },
         success: function (data) {
 
@@ -168,9 +169,11 @@ function rssResponse(input_url, username, password, username_parameter, password
                 pre_json[field_ids[i]] = data[mapped_fields[field_ids[i]]];
             }
 
-            document.getElementById('preview_row').innerHTML = "<pre>" + JSON.stringify(pre_json, undefined, 4) + "</pre>";
-            document.getElementById('preview_row').style.display = 'block';
+            document.getElementById('preview_row').innerHTML = "<pre style='white-space: pre-wrap'>" + JSON.stringify(pre_json, undefined, 4) + "</pre>";
+            document.getElementById('preview_row').classList.remove('d-none');
 
+            document.querySelector('#preview_button').disabled = false;
+            document.querySelector('#preview_button').innerHTML = 'Preview';
             $('html, body').animate({
                 scrollTop: $("#preview_row").offset().top
             }, 2000);
@@ -181,4 +184,12 @@ function rssResponse(input_url, username, password, username_parameter, password
             console.log(data)
         }
     })
+}
+
+
+function showAuthFields(agency_name) {
+    if (['IHA', 'AA'].includes(agency_name))
+        document.getElementById('auth_fields').classList.remove('d-none');
+    else if (agency_name === '')
+        document.getElementById('auth_fields').classList.add('d-none');
 }

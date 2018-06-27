@@ -6,13 +6,14 @@
     <script src="{{ url_for('static', filename='js/configuration_form_helpers.js') }}"></script>
     <script>
         function getRssResponse() {
+            document.querySelector('#preview_button').disabled = true;
+            document.querySelector('#preview_button').innerHTML = 'Loading...';
             var input_url = document.getElementById('input_url').value;
             var username = document.getElementById('username').value;
             var password = document.getElementById('password').value;
-            var username_parameter = document.getElementById('username_parameter').value;
-            var password_parameter = document.getElementById('password_parameter').value;
+            var agency_name = document.getElementById('agency_name').value;
 
-            rssResponse(input_url, username, password, username_parameter, password_parameter)
+            rssResponse(input_url, username, password, agency_name)
         }
 
         function getInputFields() {
@@ -20,7 +21,7 @@
             mapping_div.style.display = 'block';
             var content_type_id = document.getElementById('content_type').value;
             var domain_id = document.getElementById('domain').value;
-            var agency_name = document.getElementById('agency').value;
+            var agency_name = document.getElementById('agency_name').value;
             getFieldDefinition(content_type_id, domain_id, agency_name, {{ agency_config|tojson }});
         }
 
@@ -61,11 +62,11 @@
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="domain">Agency</label>
-                <select name="agency" id="agency" class="form-control" required>
-                    <option selected>IHA</option>
-                    <option selected>AA</option>
-                    <option selected>DHA</option>
-                    <option selected>Routers</option>
+                <select name="agency_name" id="agency_name" class="form-control" onchange="showAuthFields(this.value);">
+                    <option value="">Choose...</option>
+                    {% for agency in agencies %}
+                        <option value="{{ agency['name'] }}">{{ agency['name'] }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="form-group col-md-6">
@@ -74,7 +75,7 @@
                        required>
             </div>
         </div>
-        <div class="form-row">
+        <div class="form-row d-none" id="auth_fields">
             <div class="form-group col-md-3">
                 <label for="username">Username</label>
                 <input type="text" class="form-control" name="username" id="username" placeholder="Username" required>
@@ -95,6 +96,16 @@
                        placeholder="Password Parameter" required>
             </div>
         </div>
+         <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="cms_username">CMS Username</label>
+                <input type="text" class="form-control" name="cms_username" id="cms_username" placeholder="CMS Username" required>
+            </div>
+             <div class="form-group col-md-6">
+                <label for="cms_password">CMS Password</label>
+                <input type="password" class="form-control" name="cms_password" id="cms_password" placeholder="CMS Password" required>
+            </div>
+         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="domain">Domain</label>
@@ -115,11 +126,11 @@
         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
-                <label for="run_job_at">Run Job Interval</label>
-                <input class="form-control" type="number" name="sync_at" id="sync_at" required>
+                <label for="run_job_at">Run Job Interval <small class="ml-2">second</small></label>
+                <input class="form-control" type="number" name="sync_at" id="sync_at" min="30" required>
             </div>
             <div class="form-group col-md-6">
-                <label for="run_job_at">Path</label>
+                <label for="path">CMS Path</label>
                 <input class="form-control" type="text" name="path" id="path" required>
             </div>
         </div>
@@ -130,17 +141,16 @@
     </form>
 
     <div class="row">
-        <div class="col-md-1">
+        <div class="col-md-12">
             <button class="btn btn-primary mapping-btn" onclick="getInputFields();" disabled>Mapping</button>
-        </div>
-        <div class="col-md-1" id="preview_button" style="display: none;">
-            <button class="btn btn-primary" data-loading-text="Loading..." id="preview_button_load"
+
+            <button class="ml-3 btn btn-primary d-none" data-loading-text="Loading..." id="preview_button"
                     onclick="getRssResponse();">Preview
             </button>
         </div>
     </div>
     <br>
-    <div class="row fields-card" id="preview_row" style="display: none">
+    <div class="row fields-card d-none" id="preview_row">
 
     </div>
 

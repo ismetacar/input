@@ -4,9 +4,23 @@ import requests
 from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
 
-from src.helpers.input import parse_response_text
+from src.helpers.input import prepare_iha_url, prepare_aa_url, prepare_dha_url, prepare_reuters_url, parse_iha_response
 from src.helpers.user import get_user_domains, get_domain_by_id, get_content_type_by_id
 from src.utils.errors import BlupointError
+
+AGENCY_URL_LOOKUP = {
+    'IHA': prepare_iha_url,
+    'AA': prepare_aa_url,
+    'DHA': prepare_dha_url,
+    'Reuters': prepare_reuters_url
+}
+
+AGENCY_RESPONSE_LOOKUP = {
+    'IHA': parse_iha_response,
+    'AA': parse_iha_response,
+    'DHA': parse_iha_response,
+    'Reuters': parse_iha_response
+}
 
 
 def init_view(app, settings):
@@ -60,7 +74,9 @@ def init_view(app, settings):
 
         domains = get_user_domains(session['token'], session['user'], settings)
 
-        return render_template('config.html', domains=domains, token=session['token'],
+        agencies = list(app.db.agency_fields.find({}))
+
+        return render_template('config.html', domains=domains, token=session['token'], agencies=agencies,
                                management_api=settings['management_api'], agency_config=None,
                                asset_service_url=asset_service_url, user_profile_image=user_profile_image)
 
@@ -79,19 +95,17 @@ def init_view(app, settings):
             'membership_id': session['user']['membership_id']
         })
 
-        fields = app.db.agency_fields.find_one({
-            'agency_url': config_detail['input_url']
-        })
-
         config_detail['_id'] = str(config_detail['_id'])
 
         domains = get_user_domains(session['token'], session['user'], settings)
         management_api = settings['management_api']
         token = session['token']
 
-        return render_template('config.html', agency_config=config_detail, domains=domains,
+        agencies = list(app.db.agency_fields.find({}))
+
+        return render_template('config.html', agency_config=config_detail, domains=domains, agencies=agencies,
                                management_api=management_api, token=token, user_profile_image=user_profile_image,
-                               asset_service_url=asset_service_url, fields=fields['fields'])
+                               asset_service_url=asset_service_url)
 
     @app.route('/configs/<config_id>/edit', methods=['GET', 'POST'])
     def config_edit(config_id):
@@ -154,7 +168,7 @@ def init_view(app, settings):
             content_type_id = body['content_type_id']
             domain_id = body['domain_id']
             agency_fields = app.db.agency_fields.find_one({
-                'name': body['agency']
+                'name': body['agency_name']
             })
 
             url = settings['management_api'] + '/domains/' + domain_id + '/content-types/' + content_type_id
@@ -181,18 +195,20 @@ def init_view(app, settings):
     def get_agency_rss():
         body = request.form.to_dict()
 
-        url = body['input_url'] + '&{}={}&{}={}'.format(body['username_parameter'], body['username'],
-                                                        body['password_parameter'], body['password'])
+        agency = app.db.agency_fields.find_one({
+            'name': body['agency_name']
+        })
 
-        response = requests.get(url)
+        url, headers = AGENCY_URL_LOOKUP[agency['name']](agency, body)
+
+        response = requests.get(url, headers=headers)
         if response.status_code != 200:
             raise BlupointError(
                 err_msg="Agency Rss did not return 200",
                 err_code="errors.InvalidUsage",
                 status_code=response.status_code
             )
-        response_json = parse_response_text(response.text)
-        response_json = json.loads(response_json)
-        r = response_json['rss']['channel']['item'][0]
 
-        return Response(json.dumps(r), mimetype='application/json')
+        response_json = AGENCY_RESPONSE_LOOKUP[agency['name']](response.text)
+
+        return Response(response_json, mimetype='application/json')
