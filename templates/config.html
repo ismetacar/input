@@ -75,22 +75,22 @@
                        required>
             </div>
         </div>
-        <div class="form-row d-none" id="auth_fields">
-            <div class="form-group col-md-3">
+        <div class="form-row show-all" id="auth_fields">
+            <div class="form-group col-md-6">
                 <label for="username">Username</label>
                 <input type="text" class="form-control" name="username" id="username" placeholder="Username" required>
             </div>
-            <div class="form-group col-md-3">
+            <div class="form-group col-md-6 auth-params">
                 <label for="username_parameter">Username Parameter</label>
                 <input type="text" class="form-control" name="username_parameter" id="username_parameter"
                        placeholder="Username Parameter" required>
             </div>
-            <div class="form-group col-md-3">
+            <div class="form-group col-md-6">
                 <label for="password">Password</label>
                 <input type="password" class="form-control" name="password" id="password" placeholder="Password"
                        required>
             </div>
-            <div class="form-group col-md-3">
+            <div class="form-group col-md-6 auth-params">
                 <label for="password_parameter">Password Parameter</label>
                 <input type="text" class="form-control" name="password_parameter" id="password_parameter"
                        placeholder="Password Parameter" required>
@@ -125,9 +125,13 @@
             </div>
         </div>
         <div class="form-row">
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-3">
                 <label for="run_job_at">Run Job Interval <small class="ml-2">second</small></label>
                 <input class="form-control" type="number" name="sync_at" id="sync_at" min="30" required>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="expire_time">Content Expire Time <small class="ml-2">minutes</small></label>
+                <input class="form-control" type="number" name="expire_time" id="expire_time" min="30" required>
             </div>
             <div class="form-group col-md-6">
                 <label for="path">CMS Path</label>

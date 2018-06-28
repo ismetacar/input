@@ -10,7 +10,12 @@ function SetSelectValue(element_id, text, value) {
 function setFields(agency_config) {
     if (!agency_config) return;
 
-    let arr = ['agency_name', 'username', 'password', 'cms_username', 'cms_password','input_url', 'domain', 'sync_at', 'path', 'username_parameter', 'password_parameter'];
+    let arr = [
+        'agency_name', 'username', 'password',
+        'cms_username', 'cms_password', 'input_url',
+        'domain', 'sync_at', 'expire_time', 'path',
+        'username_parameter', 'password_parameter'
+    ];
 
     for (item of arr) {
         if (item === 'domain') {
@@ -177,9 +182,7 @@ function rssResponse(input_url, username, password, agency_name) {
             $('html, body').animate({
                 scrollTop: $("#preview_row").offset().top
             }, 2000);
-        }
-
-        ,
+        },
         error: function (data) {
             console.log(data)
         }
@@ -188,8 +191,13 @@ function rssResponse(input_url, username, password, agency_name) {
 
 
 function showAuthFields(agency_name) {
-    if (['IHA', 'AA'].includes(agency_name))
-        document.getElementById('auth_fields').classList.remove('d-none');
-    else if (agency_name === '')
-        document.getElementById('auth_fields').classList.add('d-none');
+    if (agency_name === 'IHA') document.getElementById('auth_fields').classList = ['show-all'];
+    else if (agency_name === 'AA') document.getElementById('auth_fields').classList = ['show-main'];
+    else {
+        inputs = document.getElementById('auth_fields').querySelectorAll('input');
+        inputs.forEach(function (input_element) {
+           input_element.value = '';
+        });
+        document.getElementById('auth_fields').classList = [];
+    }
 }

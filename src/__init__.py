@@ -2,7 +2,7 @@ from celery import Celery
 from flask import Flask
 from pymongo import MongoClient
 
-from src.tasks import register_tasks
+import celery_config
 
 
 def create_app(settings):
@@ -11,8 +11,7 @@ def create_app(settings):
     app.db = MongoClient(settings['mongo_connection_string']).get_database(settings['default_database'])
 
     app.config.update(
-        CELERY_BROKER_URL=settings['mongo_connection_string'],
-        CELERY_RESULT_BACKEND=settings['mongo_connection_string']
+        CELERY_BROKER_URL=settings['mongo_connection_string']
     )
 
     from src.views.auth import init_view
@@ -27,10 +26,12 @@ def create_app(settings):
 
 
 def make_celery(app):
-    celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
-                    broker=app.config['CELERY_BROKER_URL'])
+    celery = Celery(
+        app.import_name,
+        broker=app.config['CELERY_BROKER_URL']
+    )
     celery.conf.update(app.config)
-
+    celery.config_from_object(celery_config)
     TaskBase = celery.Task
 
     class ContextTask(TaskBase):
@@ -41,7 +42,5 @@ def make_celery(app):
                 return TaskBase.__call__(self, *args, **kwargs)
 
     celery.Task = ContextTask
-
-    register_tasks(celery)
 
     return celery

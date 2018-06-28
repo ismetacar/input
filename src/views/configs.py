@@ -15,13 +15,6 @@ AGENCY_URL_LOOKUP = {
     'Reuters': prepare_reuters_url
 }
 
-AGENCY_RESPONSE_LOOKUP = {
-    'IHA': parse_iha_response,
-    'AA': parse_iha_response,
-    'DHA': parse_iha_response,
-    'Reuters': parse_iha_response
-}
-
 
 def init_view(app, settings):
     @app.route(
@@ -32,7 +25,6 @@ def init_view(app, settings):
         configs = list(app.db.configurations.find({
             'membership_id': session['user']['membership_id']
         }))
-
         user = session['user']
         asset_service_url = settings['asset_service']
         user_profile_image = user.get('profile_image')
@@ -199,16 +191,6 @@ def init_view(app, settings):
             'name': body['agency_name']
         })
 
-        url, headers = AGENCY_URL_LOOKUP[agency['name']](agency, body)
-
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            raise BlupointError(
-                err_msg="Agency Rss did not return 200",
-                err_code="errors.InvalidUsage",
-                status_code=response.status_code
-            )
-
-        response_json = AGENCY_RESPONSE_LOOKUP[agency['name']](response.text)
+        response_json = AGENCY_URL_LOOKUP[agency['name']](agency, body)
 
         return Response(response_json, mimetype='application/json')

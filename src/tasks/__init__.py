@@ -1,4 +1,6 @@
+import celery
 
-def register_tasks(celery):
-    from src.tasks.example_task import init_task
-    init_task(celery)
+
+@celery.task()
+def foo():
+    print("hello!")
