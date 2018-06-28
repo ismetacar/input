@@ -4,15 +4,14 @@ import requests
 from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
 
-from src.helpers.input import prepare_iha_url, prepare_aa_url, prepare_dha_url, prepare_reuters_url, parse_iha_response
+from src.helpers.input import make_iha_request, make_aa_request, make_dha_request, make_reuters_request
 from src.helpers.user import get_user_domains, get_domain_by_id, get_content_type_by_id
-from src.utils.errors import BlupointError
 
 AGENCY_URL_LOOKUP = {
-    'IHA': prepare_iha_url,
-    'AA': prepare_aa_url,
-    'DHA': prepare_dha_url,
-    'Reuters': prepare_reuters_url
+    'IHA': make_iha_request,
+    'AA': make_aa_request,
+    'DHA': make_dha_request,
+    'Reuters': make_reuters_request
 }
 
 

@@ -22,6 +22,7 @@ def create_app(settings):
 
     from src.views.configs import init_view
     init_view(app, settings)
+
     return app
 
 
@@ -30,8 +31,10 @@ def make_celery(app):
         app.import_name,
         broker=app.config['CELERY_BROKER_URL']
     )
+
     celery.conf.update(app.config)
     celery.config_from_object(celery_config)
+
     TaskBase = celery.Task
 
     class ContextTask(TaskBase):
@@ -42,5 +45,8 @@ def make_celery(app):
                 return TaskBase.__call__(self, *args, **kwargs)
 
     celery.Task = ContextTask
+
+    from src.tasks import init_tasks
+    init_tasks(app, celery)
 
     return celery

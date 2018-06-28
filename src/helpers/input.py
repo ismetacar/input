@@ -26,7 +26,7 @@ def parse_aa_response(string):
     return json.dumps(r)
 
 
-def prepare_iha_url(agency, body):
+def make_iha_request(agency, body):
     url = body['input_url'] + '&{}={}&{}={}'.format(
         agency['auth_credential_parameters']['username'],
         body['username'],
@@ -47,7 +47,7 @@ def prepare_iha_url(agency, body):
     return response_json
 
 
-def prepare_aa_url(agency, body):
+def make_aa_request(agency, body):
     url = body['input_url'] + '/abone/search'
 
     data = {
@@ -92,9 +92,9 @@ def prepare_aa_url(agency, body):
     return response_json
 
 
-def prepare_dha_url(agency, body):
+def make_dha_request(agency, body):
     pass
 
 
-def prepare_reuters_url(agency, body):
+def make_reuters_request(agency, body):
     pass

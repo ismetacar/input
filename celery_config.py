@@ -9,7 +9,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERYBEAT_SCHEDULE = {
     'tasks-celery': {
-        'task': 'src.tasks.foo',
+        'task': 'src.tasks.create_contents_to_cms',
         'schedule': timedelta(seconds=10),
     }
 }
