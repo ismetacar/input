@@ -2,7 +2,8 @@ import json
 
 import requests
 import xmltodict
-from requests.auth import HTTPBasicAuth
+from flask import session
+from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
 from src.utils.errors import BlupointError
 
@@ -24,6 +25,12 @@ def parse_aa_response(string):
     }
 
     return json.dumps(r)
+
+
+def parse_reuters_response(string):
+    o = json.loads(json.dumps(xmltodict.parse(string)))
+    o = o['rss']['channel']['item'][0]
+    return json.dumps(o)
 
 
 def make_iha_request(agency, body):
@@ -80,10 +87,14 @@ def make_aa_request(agency, body):
     detail_url = body['input_url'] + '/abone/document/' + text_news[0]['id'] + '/newsml29'
     response = requests.get(detail_url, headers=headers, auth=HTTPBasicAuth(body['username'], body['password']))
 
+    if response.status_code == 429:
+        detail_url = body['input_url'] + '/abone/document/' + text_news[1]['id'] + '/newsml29'
+        response = requests.get(detail_url, headers=headers, auth=HTTPBasicAuth(body['username'], body['password']))
+
     if response.status_code != 200:
         raise BlupointError(
             err_code="errors.InvalidUsage",
-            err_msg="Agency news response is not 200",
+            err_msg="Agency news response is not 200 <{}>".format(response.status_code),
             status_code=response.status_code
         )
 
@@ -97,4 +108,36 @@ def make_dha_request(agency, body):
 
 
 def make_reuters_request(agency, body):
-    pass
+    url = body['input_url'] + '&limit=10&maxAge=2h'
+    response = requests.post(url, auth=HTTPDigestAuth(body['username'], body['password']))
+
+    if response.status_code != 200:
+        raise BlupointError(
+            err_code="errors.InvalidUsage",
+            err_msg="Agency news response is not 200",
+            status_code=response.status_code
+        )
+
+    response_json = parse_reuters_response(response.text)
+    return response_json
+
+
+def get_content_types_field_definitions(settings, domain_id, content_type_id):
+    url = settings['management_api'] + '/domains/' + domain_id + '/content-types/' + content_type_id
+    headers = {
+        'Authorization': 'Bearer {}'.format(session['token']),
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        raise BlupointError(
+            err_msg="Error occurred while getting field_definitions for content_type: <{}> in domain: <{}>".format(
+                domain_id, content_type_id),
+            err_code="errors.internalError",
+            status_code=response.status_code
+        )
+
+    content_type = json.loads(response.text)
+    return content_type.get('field_definitions', None)

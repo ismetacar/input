@@ -13,8 +13,7 @@ function setFields(agency_config) {
     let arr = [
         'agency_name', 'username', 'password',
         'cms_username', 'cms_password', 'input_url',
-        'domain', 'sync_at', 'expire_time', 'path',
-        'username_parameter', 'password_parameter'
+        'domain', 'sync_at', 'expire_time', 'path'
     ];
 
     for (item of arr) {
@@ -68,13 +67,16 @@ function setContentTypes(token, management_api) {
 function getFieldDefinition(content_type_id, domain_id, agency_name, agency_config) {
     var url = '/configs/mapping';
 
+    agency_config_id = window.location.href.toString().split(window.location.host)[1].split('configs/')[1];
+
     $.ajax({
         url: url,
         type: 'POST',
         data: {
             'content_type_id': content_type_id,
             'domain_id': domain_id,
-            'agency_name': agency_name
+            'agency_name': agency_name,
+            'agency_config_id': (agency_config_id !== 'create') ? agency_config_id : null
         },
         dataType: 'json',
         success: function (data) {
@@ -131,9 +133,11 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
                 field_ids.push(window.field_definitions[i].field_id);
             }
 
-            field_ids.forEach(function (field_id) {
-                document.getElementById(field_id).value = agency_config[field_id];
-            });
+            if (agency_config) {
+                field_ids.forEach(function (field_id) {
+                    document.getElementById(field_id).value = agency_config[field_id];
+                });
+            }
 
             return data
         },
@@ -191,8 +195,8 @@ function rssResponse(input_url, username, password, agency_name) {
 
 
 function showAuthFields(agency_name) {
-    if (agency_name === 'IHA') document.getElementById('auth_fields').classList = ['show-all'];
-    else if (agency_name === 'AA') document.getElementById('auth_fields').classList = ['show-main'];
+    if (['IHA'].includes(agency_name)) document.getElementById('auth_fields').classList = ['show-all'];
+    else if (['Reuters', 'AA'].includes(agency_name)) document.getElementById('auth_fields').classList = ['show-main'];
     else {
         inputs = document.getElementById('auth_fields').querySelectorAll('input');
         inputs.forEach(function (input_element) {

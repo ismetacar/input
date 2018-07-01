@@ -8,8 +8,12 @@ CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERYBEAT_SCHEDULE = {
-    'tasks-celery': {
-        'task': 'src.tasks.create_contents_to_cms',
+    'tasks-celery-insert': {
+        'task': 'src.tasks.insert_contents_to_cms',
         'schedule': timedelta(seconds=10),
+    },
+    'tasks-celery-remove': {
+        'task': 'src.tasks.delete_expired_contents_from_cms',
+        'schedule': timedelta(minutes=2)
     }
 }

@@ -1,10 +1,12 @@
+import datetime
 import json
 
 import requests
 from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
 
-from src.helpers.input import make_iha_request, make_aa_request, make_dha_request, make_reuters_request
+from src.helpers.input import make_iha_request, make_aa_request, make_dha_request, make_reuters_request, \
+    get_content_types_field_definitions
 from src.helpers.user import get_user_domains, get_domain_by_id, get_content_type_by_id
 
 AGENCY_URL_LOOKUP = {
@@ -57,8 +59,14 @@ def init_view(app, settings):
             body['content_type'] = {
                 '_id': body['content_type'],
                 'name': content_type['name'],
-                'type': content_type['type']
+                'type': content_type['type'],
+                'next_run_time': datetime.datetime.utcnow(),
+                'next_run_time_for_delete': datetime.datetime.utcnow()
             }
+
+            field_definitions = get_content_types_field_definitions(settings, body['domain']['_id'], body['content_type']['_id'])
+            if field_definitions:
+                body['field_definitions'] = field_definitions
 
             app.db.configurations.save(body)
             return redirect(url_for('index'))
@@ -162,20 +170,26 @@ def init_view(app, settings):
                 'name': body['agency_name']
             })
 
-            url = settings['management_api'] + '/domains/' + domain_id + '/content-types/' + content_type_id
-            headers = {
-                'Authorization': 'Bearer {}'.format(session['token']),
-                'Content-Type': 'application/json'
+            field_definitions = get_content_types_field_definitions(settings, domain_id, content_type_id)
+
+            fields = {
+                'agency_fields': agency_fields.get('fields', [])
             }
 
-            response = requests.get(url, headers=headers)
+            if field_definitions:
+                fields['field_definitions'] = field_definitions
 
-            fields = {}
-            if response.status_code == 200:
-                content_type = json.loads(response.text)
-
-                fields['field_definitions'] = content_type.get('field_definitions', [])
-                fields['agency_fields'] = agency_fields.get('fields', [])
+                if body.get('agency_config_id', None):
+                    app.db.configurations.find_and_modify(
+                        {
+                            '_id': ObjectId(body['agency_config_id'])
+                        },
+                        {
+                            '$set': {
+                                'field_definitions': fields['field_definitions']
+                            }
+                        }
+                    )
 
             return Response(json.dumps(fields), mimetype='application/json')
 
