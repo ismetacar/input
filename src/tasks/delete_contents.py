@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 
@@ -13,7 +14,7 @@ def get_contents_to_be_deleted(token, config, api):
     url = api + '/domains/' + config['domain']['_id'] + '/contents/_query'
     data = {
         'where': {
-            'path': config['path'],
+            'path': config['path'] + '/',
             'status': 'draft',
             'sys.created_by': config['cms_username'],
             'sys.published_version': {
@@ -24,7 +25,7 @@ def get_contents_to_be_deleted(token, config, api):
             '_id': 1
         }
     }
-
+    logger.info(data)
     headers = {
         'Authorization': 'Bearer {}'.format(token),
         'Content-Type': 'application/json'
@@ -44,32 +45,69 @@ def get_contents_to_be_deleted(token, config, api):
     return response_json['data']['items']
 
 
-def delete_contents(contents, token, domain_id, api):
-    url = api + '/domains/' + domain_id + '/contents/'
+def delete_contents(contents, token, domain_id, api, job_execution_id, agency_name, db):
     headers = {
         'Authorization': 'Bearer {}'.format(token)
     }
+    successfully_completed = 0
+    unsuccessfully_completed = 0
+    meta = []
     for content in contents:
-        url += content['_id']
+        url = api + '/domains/' + domain_id + '/contents/' + content['_id']
         response = requests.delete(url, headers=headers)
 
         if response.status_code != 204:
-            raise BlupointError(
-                err_msg="Error occurred while deleting content",
-                err_code="error.internalError",
-                status_code=response.status_code
-            )
+            unsuccessfully_completed += 1
+            meta.append(json.loads(response.text))
+            continue
 
-        logger.info("Content <{}> deleted.".format(content['_id']))
+        successfully_completed += 1
+        logger.info("Content <{}> deleted. Agency: <{}>. Domain: {}".format(content['_id'], agency_name, domain_id))
 
-
-def remove_contents_from_cms(configs, settings):
-    for config in configs:
-        logger.info("Contents deleting for configuration: <{}> in domain: <{}>".format(
-            config['name'],
-            config['domain']['name'])
+        db.job_executions.find_and_modify(
+            {
+                '_id': job_execution_id
+            },
+            {
+                '$set': {
+                    'total_content_count': len(contents),
+                    'successfully_completed_content': successfully_completed,
+                    'unsuccessfully_completed': unsuccessfully_completed,
+                    'meta': meta,
+                    'sys.finished_at': datetime.datetime.utcnow(),
+                    'status': 'finished'
+                }
+            }
         )
 
-        token = get_token(config['csm_username'], config['cms_password'], settings['management_api'] + '/tokens')
+
+def create_job_execution(agency_name, content_type, domain, db):
+    job_execution = {
+        'type': 'remove',
+        'status': 'started',
+        'agency': agency_name,
+        'content_type': content_type,
+        'domain': domain,
+        'result': {},
+        'meta': [],
+        'sys': {
+            'started_at': datetime.datetime.utcnow()
+        },
+        'error': {}
+    }
+
+    return db.job_executions.save(job_execution)
+
+
+def remove_contents_from_cms(configs, settings, db):
+    for config in configs:
+        logger.info("Contents deleting for configuration: <{}> in domain: <{}>".format(
+            config['agency_name'],
+            config['domain']['name'])
+        )
+        token = get_token(config['cms_username'], config['cms_password'], settings['management_api'] + '/tokens')
         contents = get_contents_to_be_deleted(token, config, settings['management_api'])
-        delete_contents(contents, token, config['domain']['id'], settings['management_api'])
+        job_execution_id = create_job_execution(config['agency_name'], config['content_type'], config['domain'], db)
+
+        delete_contents(contents, token, config['domain']['_id'],
+                        settings['management_api'], config['agency_name'], job_execution_id, db)

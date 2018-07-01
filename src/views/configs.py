@@ -1,7 +1,6 @@
 import datetime
 import json
 
-import requests
 from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
 

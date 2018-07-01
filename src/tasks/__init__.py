@@ -13,8 +13,7 @@ def init_tasks(app, celery, settings):
         configs = list(app.db.configurations.find({
             'next_run_time': {
                 '$lte': datetime.datetime.utcnow()
-            },
-            'agency_name': 'Reuters'
+            }
         }))
 
         for config in configs:
@@ -39,8 +38,7 @@ def init_tasks(app, celery, settings):
         configs = list(app.db.configurations.find({
             'next_run_time_for_delete': {
                 '$lte': datetime.datetime.utcnow()
-            },
-            'agency_name': 'Reuters'
+            }
         }))
 
         for config in configs:
@@ -56,4 +54,4 @@ def init_tasks(app, celery, settings):
                 }
             )
 
-        remove_contents_from_cms(configs, settings)
+        remove_contents_from_cms(configs, settings, app.db)

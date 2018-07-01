@@ -8,7 +8,8 @@ import celery_config
 def create_app(settings):
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
     app.secret_key = settings['secret']
-    app.db = MongoClient(settings['mongo_connection_string'], maxPoolSize=200).get_database(settings['default_database'])
+    app.db = MongoClient(settings['mongo_connection_string'], maxPoolSize=200).get_database(
+        settings['default_database'])
 
     app.config.update(
         CELERY_BROKER_URL=settings['mongo_connection_string']
@@ -21,6 +22,9 @@ def create_app(settings):
     init_view(app, settings)
 
     from src.views.configs import init_view
+    init_view(app, settings)
+
+    from src.views.jobs import init_view
     init_view(app, settings)
 
     return app

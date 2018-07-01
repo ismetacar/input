@@ -42,6 +42,7 @@ def get_token(username, password, token_api):
     response = requests.post(token_api, data=json.dumps(data))
 
     if response.status_code != 201:
+        logger.info(json.loads(response.text))
         raise BlupointError(
             err_code="errors.errorOccurredWhileGetToken",
             err_msg="Internal Server Error",
