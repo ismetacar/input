@@ -8,13 +8,15 @@ def init_tasks(app, celery, settings):
     @celery.task()
     def insert_contents_to_cms():
         #: check configurations per 30 seconds for run task.
-        #: run insert contents to cms job if the configuration next_run_time field is less than equal to now.
+        #: run insert contents to cms job if the configuration next_run_time field is less than or equal to now.
         #: shift next_run_time by configuration interval value
         configs = list(app.db.configurations.find({
             'next_run_time': {
                 '$lte': datetime.datetime.utcnow()
             },
-            'agency_name': {'$in': ['IHA', 'AA', 'Reuters']}
+            'agency_name': {
+                '$in': ['IHA', 'AA', 'Reuters']
+            }
         }))
 
         for config in configs:
@@ -40,7 +42,9 @@ def init_tasks(app, celery, settings):
             'next_run_time_for_delete': {
                 '$lte': datetime.datetime.utcnow()
             },
-            'agency_name': {'$in': ['IHA', 'AA', 'Reuters']}
+            'agency_name': {
+                '$in': ['IHA', 'AA', 'Reuters']
+            }
         }))
 
         for config in configs:
