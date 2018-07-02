@@ -1,5 +1,6 @@
 import datetime
 import json
+import math
 
 from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
@@ -22,17 +23,30 @@ def init_view(app, settings):
         methods=['GET']
     )
     def configs_index():
-        configs = list(app.db.configurations.find({
+        page = int(request.args.get('page', 1))
+        limit = 10
+        skip = int(page - 1) * limit
+
+        cur = app.db.configurations.find({
             'membership_id': session['user']['membership_id']
-        }))
+        })
+
+        total_count = cur.count()
+        cur.skip(int(skip))
+        cur.limit(int(limit))
+        configs = list(cur)
+
+        page_count = math.ceil(total_count / 10)
+
         user = session['user']
         asset_service_url = settings['asset_service']
         user_profile_image = user.get('profile_image')
         if user_profile_image:
             user_profile_image = user_profile_image.get('_id', None)
 
-        return render_template('configs.html', configs=configs, asset_service_url=asset_service_url,
-                               user_profile_image=user_profile_image)
+        return render_template('configs.html', configs=configs, total_count=total_count,
+                               asset_service_url=asset_service_url, user_profile_image=user_profile_image,
+                               page=page, page_count=page_count)
 
     @app.route(
         '/configs/create',
@@ -63,7 +77,8 @@ def init_view(app, settings):
                 'next_run_time_for_delete': datetime.datetime.utcnow()
             }
 
-            field_definitions = get_content_types_field_definitions(settings, body['domain']['_id'], body['content_type']['_id'])
+            field_definitions = get_content_types_field_definitions(settings, body['domain']['_id'],
+                                                                    body['content_type']['_id'])
             if field_definitions:
                 body['field_definitions'] = field_definitions
 

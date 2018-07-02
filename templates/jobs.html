@@ -27,7 +27,7 @@
             <th scope="col">Content Type</th>
             <th scope="col">Content Count</th>
             <th scope="col">Status</th>
-            <th scope="col">Snapshot</th>
+            <th scope="col">Progress</th>
 
         </tr>
         </thead>
@@ -59,11 +59,23 @@
         {% endfor %}
         </tbody>
     </table>
-
-    <script>
-
-        function setProgressBar(item) {
-            console.log('hebee');
-        }
-    </script>
+   <div class="row">
+        <div class="col-md-3 offset-9">
+            <ul class="pagination justify-content-end">
+                {% if page != page_count %}
+                    <li class="page-item">
+                        <a class="page-link" href="/configs?page={{ page - 1 }}"> < </a>
+                    </li>
+                {% endif %}
+                <li class="page-item">
+                    <a class="page-link" href="/configs?page={{ page }}">{{ page }} / {{ page_count }}</a>
+                </li>
+                {% if page != page_count %}
+                    <li class="page-item">
+                        <a class="page-link" href="/configs?page={{ page + 1 }}"> > </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
 {% endblock %}

@@ -36,7 +36,8 @@
                 <td>{{ config['domain']['name'] }}</td>
                 <td>{{ config['content_type']['name'] }}</td>
                 <td>
-                    <a style="color:#1f3b8b;" href="{{ url_for('config', config_id=config['_id']) }}"><i class="fa fa-edit"></i></a>
+                    <a style="color:#1f3b8b;" href="{{ url_for('config', config_id=config['_id']) }}"><i
+                            class="fa fa-edit"></i></a>
                     <a style="color:darkred; margin-left:10px;"
                        href="{{ url_for('config_delete', config_id=config['_id']) }}"><i class="fa fa-trash"></i></a>
                 </td>
@@ -44,4 +45,26 @@
         {% endfor %}
         </tbody>
     </table>
+
+    <div class="row">
+        <div class="col-md-3 offset-9">
+            <ul class="pagination justify-content-end">
+                {% if page != page_count %}
+                    <li class="page-item">
+                        <a class="page-link" href="/configs?page={{ page - 1 }}"> < </a>
+                    </li>
+                {% endif %}
+                <li class="page-item">
+                    <a class="page-link" href="/configs?page={{ page }}">{{ page }} / {{ page_count }}</a>
+                </li>
+                {% if page != page_count %}
+                    <li class="page-item">
+                        <a class="page-link" href="/configs?page={{ page + 1 }}"> > </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+
 {% endblock %}
