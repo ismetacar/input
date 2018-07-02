@@ -8,6 +8,8 @@ def init_view(app, settings):
     @app.route('/jobs', methods=['GET'])
     def jobs():
         page = int(request.args.get('page', 1))
+        page = 1 if page <= 0 else page
+
         limit = 10
         skip = int(page - 1) * limit
 

@@ -73,12 +73,22 @@ def delete_contents(contents, token, domain_id, api, job_execution_id, agency_na
                     'total_content_count': len(contents),
                     'successfully_completed_content': successfully_completed,
                     'unsuccessfully_completed': unsuccessfully_completed,
-                    'meta': meta,
-                    'sys.finished_at': datetime.datetime.utcnow(),
-                    'status': 'finished'
+                    'meta': meta
                 }
             }
         )
+
+    db.job_executions.find_and_modify(
+        {
+            '_id': job_execution_id
+        },
+        {
+            '$set': {
+                'sys.finished_at': datetime.datetime.utcnow(),
+                'status': 'finished'
+            }
+        }
+    )
 
 
 def create_job_execution(job_type, agency_name, content_type, domain, db):
@@ -86,6 +96,9 @@ def create_job_execution(job_type, agency_name, content_type, domain, db):
         'type': job_type,
         'status': 'started',
         'agency': agency_name,
+        'successfully_completed_content': 0,
+        'unsuccessfully_completed': 0,
+        'total_content_count': 0,
         'content_type': content_type,
         'domain': domain,
         'result': {},
@@ -110,4 +123,4 @@ def remove_contents_from_cms(configs, settings, db):
         job_execution_id = create_job_execution('remove', config['agency_name'], config['content_type'], config['domain'], db)
 
         delete_contents(contents, token, config['domain']['_id'],
-                        settings['management_api'], config['agency_name'], job_execution_id, db)
+                        settings['management_api'], job_execution_id, config['agency_name'], db)

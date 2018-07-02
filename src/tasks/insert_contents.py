@@ -32,7 +32,7 @@ SET_TO_QUEUE = {
 
 config_fields = ['_id', 'agency_name', 'input_url', 'domain', 'content_type', 'username', 'password',
                  'cms_username', 'cms_password', 'sync_at', 'path', 'publish', 'membership_id',
-                 'username_parameter', 'password_parameter', 'expire_time', 'next_run_time']
+                 'username_parameter', 'password_parameter', 'expire_time', 'next_run_time', 'next_run_time_for_delete']
 
 
 def get_token(username, password, token_api):
@@ -109,6 +109,9 @@ def create_job_execution(job_type, agency_name, content_type, domain, db):
         'type': job_type,
         'status': 'started',
         'agency': agency_name,
+        'successfully_completed_content': 0,
+        'unsuccessfully_completed': 0,
+        'total_content_count': 0,
         'content_type': content_type,
         'domain': domain,
         'result': {},
@@ -125,7 +128,7 @@ def create_job_execution(job_type, agency_name, content_type, domain, db):
 def insert_contents(configs, settings, db):
     for config in configs:
         logger.info("Contents inserting to CMS for configuration: <{}> in domain: <{}>".format(
-            config['name'],
+            config['agency_name'],
             config['domain']['name'])
         )
         token = get_token(config['cms_username'], config['cms_password'], settings['management_api'] + '/tokens')
@@ -158,9 +161,7 @@ def insert_contents(configs, settings, db):
                         'total_content_count': len(cms_contents),
                         'successfully_completed_content': successfully_completed,
                         'unsuccessfully_completed': unsuccessfully_completed,
-                        'meta': meta,
-                        'sys.finished_at': datetime.datetime.utcnow(),
-                        'status': 'finished'
+                        'meta': meta
                     }
                 }
             )
@@ -170,3 +171,15 @@ def insert_contents(configs, settings, db):
                 response_json['_id'], config['agency_name'],
                 config['domain']['_id'])
             )
+
+        db.job_executions.find_and_modify(
+            {
+                '_id': job_execution_id
+            },
+            {
+                '$set': {
+                    'sys.finished_at': datetime.datetime.utcnow(),
+                    'status': 'finished'
+                }
+            }
+        )

@@ -23,6 +23,7 @@
         <thead>
         <tr>
             <th scope="col">Agency Name</th>
+            <th scope="col">Job</th>
             <th scope="col">Domain</th>
             <th scope="col">Content Type</th>
             <th scope="col">Content Count</th>
@@ -36,21 +37,23 @@
         {% for item in items %}
             <tr>
                 <td>{{ item['agency'] }}</td>
-                <td>{{ item['domain']['name'] }}</td>
+                <td>{{ item['type']|title }}</td>
+                <td>{{ item['domain']['name']|title }}</td>
                 <td>{{ item['content_type']['name'] }}</td>
                 <td>{{ item['total_content_count'] }}</td>
-                <td>{{ item['status'] }}</td>
+                <td>{{ item['status']|title }}</td>
                 <td>
                     <div class="progress">
-                        {% if item['total_content_count'] == item['successfully_completed_content'] %}
+                        {% if item['total_content_count'] %}
                             <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100"
-                                 aria-valuemin="0" aria-valuemax="100" style="width:{{ 100 * item['successfully_completed_content'] / item['total_content_count'] }}%">
-                                {{ 100 * item['successfully_completed_content'] / item['total_content_count'] }}
+                                 aria-valuemin="0" aria-valuemax="100"
+                                 style="width:{{ (100 * item['successfully_completed_content'] / item['total_content_count'])|int }}%">
+                                {{ ((100 * item['successfully_completed_content']) / item['total_content_count'])|int }} %
                             </div>
                         {% else %}
                             <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0"
-                                 aria-valuemin="0" aria-valuemax="100" style="width:0">
-                                0%
+                                 aria-valuemin="0" aria-valuemax="100" style="width:100%">
+                                100%
                             </div>
                         {% endif %}
                     </div>
@@ -61,22 +64,19 @@
     </table>
     <div class="row">
         <div class="col-md-3 offset-9">
-            <form action="/configs">
+            <form action="/jobs">
                 <ul class="pagination justify-content-end">
-                    {% if page != page_count %}
-                        <li class="page-item">
-                            <a class="page-link" href="/configs?page={{ page - 1 }}"> Prev </a>
-                        </li>
-                    {% endif %}
                     <li class="page-item">
-                        <input class="form-control" name="page" id="custom_page_count" type="number" style="width: 45px;"
+                        <a class="page-link" href="/jobs?page={{ page - 1 }}"> Prev </a>
+                    </li>
+                    <li class="page-item">
+                        <input class="form-control" name="page" id="custom_page_count" type="number"
+                               style="width: 55px;"
                                value="{{ page }}">
                     </li>
-                    {% if page_count != page %}
-                        <li class="page-item">
-                            <a class="page-link" href="/configs?page={{ page + 1 }}"> Next </a>
-                        </li>
-                    {% endif %}
+                    <li class="page-item">
+                        <a class="page-link" href="/jobs?page={{ page + 1 }}"> Next </a>
+                    </li>
                 </ul>
             </form>
         </div>
