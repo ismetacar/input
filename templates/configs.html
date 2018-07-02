@@ -46,23 +46,27 @@
         </tbody>
     </table>
 
+
     <div class="row">
         <div class="col-md-3 offset-9">
-            <ul class="pagination justify-content-end">
-                {% if page != page_count %}
+            <form action="/configs">
+                <ul class="pagination justify-content-end">
+                    {% if page != page_count %}
+                        <li class="page-item">
+                            <a class="page-link" href="/configs?page={{ page - 1 }}"> Prev </a>
+                        </li>
+                    {% endif %}
                     <li class="page-item">
-                        <a class="page-link" href="/configs?page={{ page - 1 }}"> < </a>
+                        <input class="form-control" name="page" id="custom_page_count" type="number" style="width: 45px;"
+                               value="{{ page }}">
                     </li>
-                {% endif %}
-                <li class="page-item">
-                    <a class="page-link" href="/configs?page={{ page }}">{{ page }} / {{ page_count }}</a>
-                </li>
-                {% if page != page_count %}
-                    <li class="page-item">
-                        <a class="page-link" href="/configs?page={{ page + 1 }}"> > </a>
-                    </li>
-                {% endif %}
-            </ul>
+                    {% if page_count != page %}
+                        <li class="page-item">
+                            <a class="page-link" href="/configs?page={{ page + 1 }}"> Next </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </form>
         </div>
     </div>
 

@@ -81,9 +81,9 @@ def delete_contents(contents, token, domain_id, api, job_execution_id, agency_na
         )
 
 
-def create_job_execution(agency_name, content_type, domain, db):
+def create_job_execution(job_type, agency_name, content_type, domain, db):
     job_execution = {
-        'type': 'remove',
+        'type': job_type,
         'status': 'started',
         'agency': agency_name,
         'content_type': content_type,
@@ -107,7 +107,7 @@ def remove_contents_from_cms(configs, settings, db):
         )
         token = get_token(config['cms_username'], config['cms_password'], settings['management_api'] + '/tokens')
         contents = get_contents_to_be_deleted(token, config, settings['management_api'])
-        job_execution_id = create_job_execution(config['agency_name'], config['content_type'], config['domain'], db)
+        job_execution_id = create_job_execution('remove', config['agency_name'], config['content_type'], config['domain'], db)
 
         delete_contents(contents, token, config['domain']['_id'],
                         settings['management_api'], config['agency_name'], job_execution_id, db)

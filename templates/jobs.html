@@ -44,8 +44,8 @@
                     <div class="progress">
                         {% if item['total_content_count'] == item['successfully_completed_content'] %}
                             <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100"
-                                 aria-valuemin="0" aria-valuemax="100" style="width:100%">
-                                100%
+                                 aria-valuemin="0" aria-valuemax="100" style="width:{{ 100 * item['successfully_completed_content'] / item['total_content_count'] }}%">
+                                {{ 100 * item['successfully_completed_content'] / item['total_content_count'] }}
                             </div>
                         {% else %}
                             <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0"
@@ -59,23 +59,27 @@
         {% endfor %}
         </tbody>
     </table>
-   <div class="row">
+    <div class="row">
         <div class="col-md-3 offset-9">
-            <ul class="pagination justify-content-end">
-                {% if page != page_count %}
+            <form action="/configs">
+                <ul class="pagination justify-content-end">
+                    {% if page != page_count %}
+                        <li class="page-item">
+                            <a class="page-link" href="/configs?page={{ page - 1 }}"> Prev </a>
+                        </li>
+                    {% endif %}
                     <li class="page-item">
-                        <a class="page-link" href="/configs?page={{ page - 1 }}"> < </a>
+                        <input class="form-control" name="page" id="custom_page_count" type="number" style="width: 45px;"
+                               value="{{ page }}">
                     </li>
-                {% endif %}
-                <li class="page-item">
-                    <a class="page-link" href="/configs?page={{ page }}">{{ page }} / {{ page_count }}</a>
-                </li>
-                {% if page != page_count %}
-                    <li class="page-item">
-                        <a class="page-link" href="/configs?page={{ page + 1 }}"> > </a>
-                    </li>
-                {% endif %}
-            </ul>
+                    {% if page_count != page %}
+                        <li class="page-item">
+                            <a class="page-link" href="/configs?page={{ page + 1 }}"> Next </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </form>
         </div>
     </div>
+
 {% endblock %}

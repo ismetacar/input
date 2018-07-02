@@ -13,7 +13,8 @@ def init_tasks(app, celery, settings):
         configs = list(app.db.configurations.find({
             'next_run_time': {
                 '$lte': datetime.datetime.utcnow()
-            }
+            },
+            'agency_name': {'$in': ['IHA', 'AA', 'Reuters']}
         }))
 
         for config in configs:
@@ -38,7 +39,8 @@ def init_tasks(app, celery, settings):
         configs = list(app.db.configurations.find({
             'next_run_time_for_delete': {
                 '$lte': datetime.datetime.utcnow()
-            }
+            },
+            'agency_name': {'$in': ['IHA', 'AA', 'Reuters']}
         }))
 
         for config in configs:
