@@ -73,7 +73,8 @@ def init_view(app, settings):
                 '_id': body['content_type'],
                 'name': content_type['name'],
                 'type': content_type['type']
-            },
+            }
+            
             body['next_run_time']: datetime.datetime.utcnow()
             body['next_run_time_for_delete']: datetime.datetime.utcnow()
 
