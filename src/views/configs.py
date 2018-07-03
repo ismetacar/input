@@ -72,10 +72,10 @@ def init_view(app, settings):
             body['content_type'] = {
                 '_id': body['content_type'],
                 'name': content_type['name'],
-                'type': content_type['type'],
-                'next_run_time': datetime.datetime.utcnow(),
-                'next_run_time_for_delete': datetime.datetime.utcnow()
-            }
+                'type': content_type['type']
+            },
+            body['next_run_time']: datetime.datetime.utcnow()
+            body['next_run_time_for_delete']: datetime.datetime.utcnow()
 
             field_definitions = get_content_types_field_definitions(settings, body['domain']['_id'],
                                                                     body['content_type']['_id'])
