@@ -49,27 +49,27 @@ def before_request():
             return redirect(url_for('logout'))
 
 
-#: @app.errorhandler(Exception)
-#: def handle_exceptions(e):
-#:     if isinstance(e, BlupointError):
-#:         error = {
-#:             'err_msg': e.err_msg or 'Internal error occurred',
-#:             'err_code': e.err_code or 'errors.internalError',
-#:             'context': e.context,
-#:             'reason': e.reason
-#:         }
-#:
-#:         flash(error['err_msg'], 'error')
-#:         return redirect(url_for('login'))
-#:
-#:     else:
-#:         error = {
-#:             'err_msg': str(e),
-#:             'err_code': "errors.internalError"
-#:         }
-#:
-#:         flash(error['err_msg'], 'error')
-#:         return redirect(url_for('index'))
+@app.errorhandler(Exception)
+def handle_exceptions(e):
+    if isinstance(e, BlupointError):
+        error = {
+            'err_msg': e.err_msg or 'Internal error occurred',
+            'err_code': e.err_code or 'errors.internalError',
+            'context': e.context,
+            'reason': e.reason
+        }
+
+        flash(error['err_msg'], 'error')
+        return redirect(url_for('login'))
+
+    else:
+        error = {
+            'err_msg': str(e),
+            'err_code': "errors.internalError"
+        }
+
+        flash(error['err_msg'], 'error')
+        return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
