@@ -11,7 +11,7 @@ from src.utils.errors import BlupointError
 def parse_iha_response(string):
     o = xmltodict.parse(string)
     o = o['rss']['channel']['item'][0]
-    return json.dumps(o)
+    return o
 
 
 def parse_aa_response(string):
@@ -51,7 +51,15 @@ def make_iha_request(agency, body):
 
     response_json = parse_iha_response(response.text)
 
-    return response_json
+    images = []
+    if 'images' in response_json:
+        for image in response_json['images']['image']:
+            image = {"link": image['#text']}
+            images.append(image)
+
+        response_json['images'] = images
+
+    return json.dumps(response_json)
 
 
 def make_aa_request(agency, body):
