@@ -13,7 +13,9 @@ def init_view(app, settings):
         limit = 10
         skip = int(page - 1) * limit
 
-        cur = app.db.job_executions.find({}).sort("_id", DESCENDING)
+        user = session['user']
+        membership_id = user['membership_id']
+        cur = app.db.job_executions.find({'membership_id': membership_id}).sort("_id", DESCENDING)
 
         total_count = cur.count()
         cur.skip(skip)
@@ -21,7 +23,6 @@ def init_view(app, settings):
         items = list(cur)
         page_count = math.ceil(total_count / 10)
 
-        user = session['user']
         asset_service_url = settings['asset_service']
         user_profile_image = user.get('profile_image')
         if user_profile_image:
