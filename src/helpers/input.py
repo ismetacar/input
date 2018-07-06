@@ -1,4 +1,5 @@
 import json
+from pprint import pprint
 
 import requests
 import xmltodict
@@ -16,15 +17,21 @@ def parse_iha_response(string):
 
 def parse_aa_response(string):
     o = json.loads(json.dumps(xmltodict.parse(string)))
-    o = o['newsMessage']['itemSet']['newsItem']['contentSet']['inlineXML']['nitf']['body']
+    pprint(o['newsMessage']['itemSet']['packageItem']['itemRef'])
+    o = o['newsMessage']['itemSet']['newsItem']
     r = {
-        'headline': o['body.head']['headline']['hl1'],
-        'byline': o['body.head']['byline']['byttl'],
-        'abstract': o['body.head']['abstract'],
-        'content': o['body.content']
+        'headline': o['contentSet']['inlineXML']['nitf']['body']['body.head']['headline']['hl1'],
+        'byline': o['contentSet']['inlineXML']['nitf']['body']['body.head']['byline']['byttl'],
+        'abstract': o['contentSet']['inlineXML']['nitf']['body']['body.head']['abstract'],
+        'content': o['contentSet']['inlineXML']['nitf']['body']['body.content'],
+        'images': o['itemMeta'].get('link', [])
     }
 
-    return json.dumps(r)
+    return r
+
+
+def parse_dha_response(string):
+    pass
 
 
 def parse_reuters_response(string):
@@ -52,10 +59,15 @@ def make_iha_request(agency, body):
     response_json = parse_iha_response(response.text)
 
     images = []
-    if 'images' in response_json:
-        for image in response_json['images']['image']:
-            image = {"link": image['#text']}
+    response_json = dict(response_json)
+    if 'images' in response_json and response_json['images']:
+        if isinstance(response_json['images']['image'], dict):
+            image = {"link": response_json['images']['image']['#text']}
             images.append(image)
+        elif isinstance(response_json['images']['image'], list):
+            for image in response_json['images']['image']:
+                image = {"link": image['#text']}
+                images.append(image)
 
         response_json['images'] = images
 
@@ -92,23 +104,35 @@ def make_aa_request(agency, body):
         if item['type'] == 'text':
             text_news.append(item)
 
-    detail_url = body['input_url'] + '/abone/document/' + text_news[0]['id'] + '/newsml29'
-    response = requests.get(detail_url, headers=headers, auth=HTTPBasicAuth(body['username'], body['password']))
-
-    if response.status_code == 429:
-        detail_url = body['input_url'] + '/abone/document/' + text_news[1]['id'] + '/newsml29'
+    for i in range(0, 10):
+        detail_url = body['input_url'] + '/abone/document/' + text_news[10 - i]['id'] + '/newsml29'
         response = requests.get(detail_url, headers=headers, auth=HTTPBasicAuth(body['username'], body['password']))
 
-    if response.status_code != 200:
-        raise BlupointError(
-            err_code="errors.InvalidUsage",
-            err_msg="Agency news response is not 200 <{}>".format(response.status_code),
-            status_code=response.status_code
-        )
+        if response.status_code == 200:
+            break
 
     response_json = parse_aa_response(response.text)
 
-    return response_json
+    images = []
+    response_json = dict(response_json)
+    if 'images' in response_json and response_json['images']:
+        if isinstance(response_json['images'], dict):
+            image = {
+                "image_id": response_json['images']['@residref'],
+                "title": response_json['images']['title']
+            }
+            images.append(image)
+        if isinstance(response_json['images'], list):
+            for image in response_json['images']:
+                image = {
+                    "image_id": image['@residref'],
+                    "title": image['title']
+                }
+                images.append(image)
+
+        response_json['images'] = images
+
+    return json.dumps(response_json)
 
 
 def make_dha_request(agency, body):

@@ -24,6 +24,7 @@ def init_view(app, settings):
     )
     def configs_index():
         page = int(request.args.get('page', 1))
+        page = 1 if page <= 0 else page
         limit = 10
         skip = int(page - 1) * limit
 
