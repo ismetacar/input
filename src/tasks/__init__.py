@@ -31,7 +31,7 @@ def init_tasks(app, celery, settings):
                 }
             )
 
-        insert_contents(configs, settings, app.db)
+        insert_contents(configs, settings, app.db, app.redis_queue)
 
     @celery.task()
     def delete_expired_contents_from_cms():
@@ -60,4 +60,4 @@ def init_tasks(app, celery, settings):
                 }
             )
 
-        remove_contents_from_cms(configs, settings, app.db)
+        remove_contents_from_cms(configs, settings, app.db, app.redis_queue)

@@ -113,7 +113,7 @@ def create_job_execution(job_type, agency_name, content_type, domain, membership
     return db.job_executions.save(job_execution)
 
 
-def remove_contents_from_cms(configs, settings, db):
+def remove_contents_from_cms(configs, settings, db, redis_queue):
     for config in configs:
         logger.info("Contents deleting for configuration: <{}> in domain: <{}>".format(
             config['agency_name'],

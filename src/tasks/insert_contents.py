@@ -97,7 +97,7 @@ def map_fields_by_config(content, config, integer_fields, asset_fields, agency_n
     return cms_content
 
 
-def get_agency_contents(config, asset_url, token, db):
+def get_agency_contents(config, asset_url, token, db, redis_queue):
     agency = db.agency_fields.find_one({
         'name': config['agency_name']
     })
@@ -118,7 +118,7 @@ def get_agency_contents(config, asset_url, token, db):
     _config.pop('field_definitions', None)
     i = 0
     for content in contents:
-        if not SET_TO_QUEUE[agency['name']](content):
+        if not SET_TO_QUEUE[agency['name']](content, redis_queue):
             i += 1
             continue
 
@@ -164,7 +164,7 @@ def create_job_execution(job_type, agency_name, content_type, domain, membership
     return db.job_executions.save(job_execution)
 
 
-def insert_contents(configs, settings, db):
+def insert_contents(configs, settings, db, redis_queue):
     for config in configs:
         logger.info("Contents inserting to CMS for configuration: <{}> in domain: <{}>".format(
             config['agency_name'],
@@ -172,7 +172,7 @@ def insert_contents(configs, settings, db):
         )
         token = get_token(config['cms_username'], config['cms_password'], settings['management_api'] + '/tokens')
         asset_url = settings['management_api'] + '/domains/' + config['domain']['_id'] + '/files'
-        cms_contents = get_agency_contents(config, asset_url, token, db)
+        cms_contents = get_agency_contents(config, asset_url, token, db, redis_queue)
         url = settings['management_api'] + '/domains/{}/contents'.format(config['domain']['_id'])
         headers = {
             'Authorization': 'Bearer {}'.format(token)

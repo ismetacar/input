@@ -1,13 +1,11 @@
-import datetime
 import json
 import logging
-from pprint import pprint
 
 import requests
 import xmltodict
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
-from run import iha_queue, aa_queue, ap_queue
+from run import iha_queue, aa_queue, ap_queue, reuters_queue
 from src.utils.errors import BlupointError
 
 logger = logging.getLogger('contents')
@@ -380,7 +378,7 @@ def upload_image_for_ap(agency_name, content, field, asset_fields, asset_url, to
     return images
 
 
-def set_iha_queue(content):
+def set_iha_queue(content, redis_queue):
     if content['HaberKodu'] not in iha_queue:
         iha_queue.append(content['HaberKodu'])
     else:
@@ -389,30 +387,30 @@ def set_iha_queue(content):
     return True
 
 
-def set_aa_queue(content):
+def set_aa_queue(content, redis_queue):
     logger.warning(content['item_id'])
     if content['item_id'] not in aa_queue:
-        iha_queue.append(content['item_id'])
+        aa_queue.append(content['item_id'])
     else:
         return False
 
     return True
 
 
-def set_dha_queue(content):
+def set_dha_queue(content, redis_queue):
     pass
 
 
-def set_reuters_queue(content):
+def set_reuters_queue(content, redis_queue):
     if content['link'] not in iha_queue:
-        iha_queue.append(content['link'])
+        reuters_queue.append(content['link'])
     else:
         return False
 
     return True
 
 
-def set_ap_queue(content):
+def set_ap_queue(content, redis_queue):
     if content['item_id'] not in ap_queue:
         ap_queue.append(content['item_id'])
     else:
