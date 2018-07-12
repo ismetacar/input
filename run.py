@@ -13,6 +13,7 @@ iha_queue = deque([], 1500)
 dha_queue = deque([], 1500)
 aa_queue = deque([], 1500)
 reuters_queue = deque([], 1500)
+ap_queue = deque([], 1500)
 
 
 def config_settings():
