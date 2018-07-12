@@ -214,13 +214,13 @@ def upload_image_for_aa(agency_name, content, field, asset_fields, asset_url, to
 
     if not multiple:
         if isinstance(content['images'], dict):
-            image = {
+            images = {
                 'image_id': content['images']['@residref'],
                 'image_title': content['images']['@residref']
             }
 
-            if 'picture' in image['image_id']:
-                image = image_uploader(agency_name, image['image_id'], image['image_title'],
+            if 'picture' in images['image_id']:
+                image = image_uploader(agency_name, images['image_id'], images['image_title'],
                                        asset_url, token, multiple, username, password)
             else:
                 return {}
@@ -277,17 +277,20 @@ def upload_image_for_reuters(agency_name, content, field, asset_fields, asset_ur
 
     if not multiple:
         if isinstance(content['images'], dict):
-            image = {
+            if content['images'].get('@url', None):
+                return {}
+
+            images = {
                 'image_url': content['images']['@url'],
                 'image_title': content['images']['@url'].split('tag:reuters.com,')[-1]
             }
 
         elif isinstance(content['images'], list):
-            image = content['images'][0]
-            image['image_url'] = image['@url']
-            image['image_title'] = image['@url'].split('tag:reuters.com,')[-1]
+            images = content['images'][0]
+            images['image_url'] = images['@url']
+            images['image_title'] = images['@url'].split('tag:reuters.com,')[-1]
 
-        image = image_uploader(agency_name, image['image_url'], image['image_title'],
+        image = image_uploader(agency_name, images['image_url'], images['image_title'],
                                asset_url, token, multiple, username, password)
         return image
 
