@@ -1,11 +1,13 @@
+import datetime
 import json
 import logging
+from pprint import pprint
 
 import requests
 import xmltodict
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
-from run import iha_queue, aa_queue
+from run import iha_queue, aa_queue, ap_queue
 from src.utils.errors import BlupointError
 
 logger = logging.getLogger('contents')
@@ -124,6 +126,43 @@ def get_contents_from_reuters(agency, agency_config):
     return news
 
 
+def get_contents_from_ap(agency, agency_config):
+    url = agency_config['input_url'] + '/AP.Distro.Feed/GetFeed.aspx?idList=31896&idListType=products&maxItems=20'
+
+    response = requests.get(url, auth=HTTPBasicAuth(agency_config['username'], agency_config['password']))
+
+    logger.warning(response.status_code)
+    if response.status_code != 200:
+        raise BlupointError(
+            err_msg="Agency Rss didnt return 200",
+            err_code="errors.InvalidUsage",
+            status_code=response.status_code
+        )
+
+    feeds_json = json.loads(json.dumps(xmltodict.parse(response.text)))
+
+    items = feeds_json['feed'].get('entry', [])
+
+    news = []
+    for item in items:
+        images = item.get('link')
+        r = {
+            'item_id': item['id'],
+            'title': item['title'],
+            'text': item['content']['#text'],
+            'updated': item['updated'],
+            'published': item['published'],
+            'byline': item['apcm:ContentMetadata']['apcm:ByLine'][0]['#text'],
+            'keywords': item.get('Keywords'),
+            'images': images
+        }
+
+        news.append(r)
+
+    logger.info("total content count from ap: <{}>".format(len(news)))
+    return news
+
+
 def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, token, username, password):
     content = json.loads(json.dumps(content))
 
@@ -195,7 +234,8 @@ def upload_image_for_aa(agency_name, content, field, asset_fields, asset_url, to
             if image:
                 image_id = image['@residref']
                 image_title = image['title']
-                image = image_uploader(agency_name, image_id, image_title, asset_url, token, multiple, username, password)
+                image = image_uploader(agency_name, image_id, image_title, asset_url, token, multiple, username,
+                                       password)
 
             return image
 
@@ -273,6 +313,70 @@ def upload_image_for_reuters(agency_name, content, field, asset_fields, asset_ur
     return images
 
 
+def upload_image_for_ap(agency_name, content, field, asset_fields, asset_url, token, username, password):
+    content = json.loads(json.dumps(content))
+    multiple = False
+    for asset_field in asset_fields:
+        if asset_field['field_id'] == field:
+            multiple = asset_field['multiple']
+
+    if 'images' not in content:
+        return [] if multiple else {}
+
+    if not multiple:
+        if isinstance(content['images'], dict):
+            if not content['images']['apcm:Characteristics'].get('@OriginalFileName'):
+                return {}
+
+            images = {
+                'image_url': content['images']['@href'],
+                'image_title': content['images']['apcm:Characteristics']['@OriginalFileName']
+            }
+
+        elif isinstance(content['images'], list):
+            images = content['images'][0]
+            for i in range(1, len(content['images'])):
+                if not images['apcm:Characteristics'].get('@OriginalFileName', None):
+                    images = content['images'][i]
+                break
+
+            if not images:
+                return {}
+
+            images['image_url'] = images['@href']
+            images['image_title'] = images['apcm:Characteristics']['@OriginalFileName']
+
+        image = image_uploader(agency_name, images['image_url'], images['image_title'],
+                               asset_url, token, multiple, username, password)
+
+        return image
+
+    images = []
+    if 'images' in content and content['images']:
+        if isinstance(content['images'], dict):
+            if not content['images']['apcm:Characteristics'].get('@OriginalFileName'):
+                return {}
+
+            image = {
+                'image_url': content['images']['@href'],
+                'image_title': content['images']['apcm:Characteristics'].get('@OriginalFileName')
+            }
+            images.append(image)
+
+        elif isinstance(content['images'], list):
+            for image in content['images']:
+                if not image['apcm:Characteristics'].get('@OriginalFileName'):
+                    continue
+                image_url = image['@href']
+                image_title = image['apcm:Characteristics']['@OriginalFileName']
+
+                images.append(image_uploader(
+                    agency_name, image_url, image_title, asset_url, token, multiple, username, password)
+                )
+
+    return images
+
+
 def set_iha_queue(content):
     if content['HaberKodu'] not in iha_queue:
         iha_queue.append(content['HaberKodu'])
@@ -305,6 +409,14 @@ def set_reuters_queue(content):
     return True
 
 
+def set_ap_queue(content):
+    if content['item_id'] not in ap_queue:
+        ap_queue.append(content['item_id'])
+    else:
+        return False
+    return True
+
+
 def image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password):
     if agency_name == 'IHA':
         r = requests.get(image_url, allow_redirects=True)
@@ -321,6 +433,10 @@ def image_uploader(agency_name, image_url, image_name, asset_url, token, multipl
 
     elif agency_name == 'Reuters':
         r = requests.get(image_url, allow_redirects=True, auth=HTTPDigestAuth(username, password))
+        open(image_name + '.jpg', 'wb').write(r.content)
+
+    elif agency_name == 'AP':
+        r = requests.get(image_url)
         open(image_name + '.jpg', 'wb').write(r.content)
 
     files = {'media': (image_name + '.jpg', open(image_name + '.jpg', 'rb'))}
