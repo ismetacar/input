@@ -17,7 +17,6 @@ def parse_iha_response(string):
 
 def parse_aa_response(string):
     o = json.loads(json.dumps(xmltodict.parse(string)))
-    pprint(o['newsMessage']['itemSet']['packageItem']['itemRef'])
     o = o['newsMessage']['itemSet']['newsItem']
     r = {
         'headline': o['contentSet']['inlineXML']['nitf']['body']['body.head']['headline']['hl1'],
@@ -38,6 +37,31 @@ def parse_reuters_response(string):
     o = json.loads(json.dumps(xmltodict.parse(string)))
     o = o['rss']['channel']['item'][0]
     return json.dumps(o)
+
+
+def parse_ap_response(string):
+    o = json.loads(json.dumps(xmltodict.parse(string)))
+    o = o['feed']['entry']
+    images = o['link']
+    _images = []
+    for image in images:
+        _images.append({
+            'href': image['@href']
+        })
+
+    r = {
+        'item_id': o['id'],
+        'title': o['title'],
+        'text': o['content']['#text'],
+        'byline': o['apcm:ContentMetadata']['apcm:ByLine'][0]['#text'],
+        'published': o['published'],
+        'updated': o['updated'],
+        'keywords': o['apcm:ContentMetadata'].get('apcm:Keywords', []),
+        'images': _images
+
+    }
+
+    return r
 
 
 def make_iha_request(agency, body):
@@ -137,6 +161,25 @@ def make_aa_request(agency, body):
 
 def make_dha_request(agency, body):
     pass
+
+
+def make_ap_request(agency, body):
+    url = body['input_url'] + '/AP.Distro.Feed/GetFeed.aspx?idList=31896&idListType=products&maxItems=1'
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers, auth=HTTPBasicAuth(body['username'], body['password']))
+
+    if response.status_code != 200:
+        raise BlupointError(
+            err_code="errors.InvalidUsage",
+            err_msg="Agency news response is not 200",
+            status_code=response.status_code
+        )
+
+    response_json = parse_ap_response(response.text)
+
+    return json.dumps(response_json)
 
 
 def make_reuters_request(agency, body):
