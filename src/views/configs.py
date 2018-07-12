@@ -6,14 +6,15 @@ from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
 
 from src.helpers.input import make_iha_request, make_aa_request, make_dha_request, make_reuters_request, \
-    get_content_types_field_definitions
+    get_content_types_field_definitions, make_ap_request
 from src.helpers.user import get_user_domains, get_domain_by_id, get_content_type_by_id
 
 AGENCY_URL_LOOKUP = {
     'IHA': make_iha_request,
     'AA': make_aa_request,
     'DHA': make_dha_request,
-    'Reuters': make_reuters_request
+    'Reuters': make_reuters_request,
+    'AP': make_ap_request
 }
 
 

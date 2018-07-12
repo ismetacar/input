@@ -196,7 +196,7 @@ function rssResponse(input_url, username, password, agency_name) {
 
 function showAuthFields(agency_name) {
     if (['IHA'].includes(agency_name)) document.getElementById('auth_fields').classList = ['show-all'];
-    else if (['Reuters', 'AA'].includes(agency_name)) document.getElementById('auth_fields').classList = ['show-main'];
+    else if (['Reuters', 'AA', 'AP'].includes(agency_name)) document.getElementById('auth_fields').classList = ['show-main'];
     else {
         inputs = document.getElementById('auth_fields').querySelectorAll('input');
         inputs.forEach(function (input_element) {

@@ -11,7 +11,7 @@ from src.helpers.contents import (
     get_contents_from_aa,
     get_contents_from_dha,
     set_iha_queue, set_dha_queue, set_aa_queue, set_reuters_queue, upload_image_for_iha, upload_image_for_dha,
-    upload_image_for_aa, upload_image_for_reuters)
+    upload_image_for_aa, upload_image_for_reuters, get_contents_from_ap, set_ap_queue, upload_image_for_ap)
 
 from src.utils.errors import BlupointError
 
@@ -21,21 +21,24 @@ GET_CONTENTS = {
     'IHA': get_contents_from_iha,
     'DHA': get_contents_from_dha,
     'AA': get_contents_from_aa,
-    'Reuters': get_contents_from_reuters
+    'Reuters': get_contents_from_reuters,
+    'AP': get_contents_from_ap
 }
 
 SET_TO_QUEUE = {
     'IHA': set_iha_queue,
     'DHA': set_dha_queue,
     'AA': set_aa_queue,
-    'Reuters': set_reuters_queue
+    'Reuters': set_reuters_queue,
+    'AP': set_ap_queue
 }
 
 GET_IMAGE = {
     'IHA': upload_image_for_iha,
     'DHA': upload_image_for_dha,
     'AA': upload_image_for_aa,
-    'Reuters': upload_image_for_reuters
+    'Reuters': upload_image_for_reuters,
+    'AP': upload_image_for_ap
 }
 
 config_fields = ['_id', 'agency_name', 'input_url', 'domain', 'content_type', 'cms_username',
