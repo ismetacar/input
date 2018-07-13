@@ -13,14 +13,12 @@ function setFields(agency_config) {
     let arr = [
         'agency_name', 'username', 'password',
         'cms_username', 'cms_password', 'input_url',
-        'domain', 'sync_at', 'expire_time', 'path'
+        'domain', 'sync_at', 'expire_time', 'path', 'username_parameter', 'password_parameter'
     ];
 
     for (item of arr) {
-        if (item === 'domain') {
-            document.getElementById(item).value = agency_config[item]._id;
-        } else {
-            document.getElementById(item).value = agency_config[item];
+        if (document.getElementById(item)) {
+            document.getElementById(item).value = item === 'domain' ? agency_config[item]._id : agency_config[item];
         }
     }
 
@@ -198,7 +196,7 @@ function showAuthFields(agency_name) {
     else {
         inputs = document.getElementById('auth_fields').querySelectorAll('input');
         inputs.forEach(function (input_element) {
-           input_element.value = '';
+            input_element.value = '';
         });
         document.getElementById('auth_fields').classList = [];
     }

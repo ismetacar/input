@@ -31,11 +31,20 @@
                 setFields({{ agency_config|tojson }});
             {% endif %}
 
-            const form = document.querySelector('#configuration_form');
-            form.addEventListener("focus", function (event) {
+            const checkValidations = () => {
                 let formValidation = Array.from(document.querySelectorAll('[required]')).filter(x => x.value === "").length === 0;
                 document.querySelector('.mapping-btn ').disabled = !formValidation;
+            };
+
+            const form = document.querySelector('#configuration_form');
+            form.addEventListener("keypress", function (event) {
+                checkValidations();
             }, true);
+
+            if(document.querySelector('#domain').value) {
+                setContentTypes('{{ token }}', '{{ management_api }}');
+            }
+            checkValidations();
         });
 
     </script>
@@ -111,7 +120,7 @@
                 <label for="domain">Domain</label>
                 <select name="domain" id="domain" class="form-control"
                         onchange="setContentTypes('{{ token }}', '{{ management_api }}')" required>
-                    <option selected>Choose...</option>
+                    <option value="" selected>Choose...</option>
                     {% for domain in domains %}
                         <option value="{{ domain['_id'] }}">{{ domain['name'] }}</option>
                     {% endfor %}
@@ -120,7 +129,7 @@
             <div class="form-group col-md-6">
                 <label for="content_type">Content Type</label>
                 <select name="content_type" id="content_type" class="form-control" required>
-                    <option selected>Choose...</option>
+                    <option value="" selected>Choose...</option>
                 </select>
             </div>
         </div>
