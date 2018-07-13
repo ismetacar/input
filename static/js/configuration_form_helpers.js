@@ -183,9 +183,7 @@ function rssResponse(input_url, username, password, agency_name) {
 
             document.querySelector('#preview_button').disabled = false;
             document.querySelector('#preview_button').innerHTML = 'Preview';
-            $('html, body').animate({
-                scrollTop: $("#preview_row").offset().top
-            }, 2000);
+            document.getElementById('preview_row').scrollIntoView();
         },
         error: function (data) {
             console.log(data)
