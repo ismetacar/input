@@ -440,7 +440,7 @@ def image_uploader(agency_name, image_url, image_name, asset_url, token, multipl
         r = requests.get(image_url)
         open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
-    files = {'media': (image_name + '.jpg', open(image_name + '.jpg', 'rb'))}
+    files = {'media': (image_name + '.jpg', open('images/' + image_name + '.jpg', 'rb'))}
     headers = {
         'Authorization': 'Bearer {}'.format(token),
     }
