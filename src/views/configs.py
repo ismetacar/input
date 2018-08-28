@@ -30,7 +30,7 @@ def init_view(app, settings):
         skip = int(page - 1) * limit
 
         cur = app.db.configurations.find({
-            'membership_id': session['user']['membership_id']
+            'membership_id': session['user']['membership']['_id']
         })
 
         total_count = cur.count()
@@ -63,7 +63,7 @@ def init_view(app, settings):
             user_profile_image = user_profile_image.get('_id', None)
         if request.method == 'POST':
             body = request.form.to_dict()
-            body['membership_id'] = session['user']['membership_id']
+            body['membership_id'] = session['user']['membership']['_id']
             domain = get_domain_by_id(body['domain'], session['token'], settings)
             content_type = get_content_type_by_id(body['content_type'], body['domain'], session['token'], settings)
             body['domain'] = {
@@ -108,7 +108,7 @@ def init_view(app, settings):
             user_profile_image = user_profile_image.get('_id', None)
         config_detail = app.db.configurations.find_one({
             '_id': ObjectId(config_id),
-            'membership_id': session['user']['membership_id']
+            'membership_id': session['user']['membership']['_id']
         })
 
         config_detail['_id'] = str(config_detail['_id'])
@@ -128,7 +128,7 @@ def init_view(app, settings):
 
         agency_config = app.db.configurations.find_one({
             '_id': ObjectId(config_id),
-            'membership_id': session['user']['membership_id']
+            'membership_id': session['user']['membership']['_id']
         })
 
         fields = app.db.agency_fields.find_one({
@@ -137,7 +137,7 @@ def init_view(app, settings):
 
         if request.method == 'POST':
             body = request.form.to_dict()
-            body['membership_id'] = session['user']['membership_id']
+            body['membership_id'] = session['user']['membership']['_id']
             domain = get_domain_by_id(body['domain'], session['token'], settings)
             content_type = get_content_type_by_id(body['content_type'], body['domain'], session['token'], settings)
             body['domain'] = {

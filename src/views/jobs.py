@@ -7,6 +7,7 @@ from pymongo import DESCENDING
 def init_view(app, settings):
     @app.route('/jobs', methods=['GET'])
     def jobs():
+
         page = int(request.args.get('page', 1))
         page = 1 if page <= 0 else page
 
@@ -14,10 +15,13 @@ def init_view(app, settings):
         skip = int(page - 1) * limit
 
         user = session['user']
-        membership_id = user['membership_id']
+        membership_id = user['membership']['_id']
         cur = app.db.job_executions.find({'membership_id': membership_id}).sort("_id", DESCENDING)
+        try:
+            total_count = cur.count()
+        except Exception as e:
+            print(str(e))
 
-        total_count = cur.count()
         cur.skip(skip)
         cur.limit(limit)
         items = list(cur)

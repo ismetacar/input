@@ -19,7 +19,7 @@ ap_queue = deque([], 1500)
 def config_settings():
     config_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "confs/local.py"))
     with open(config_file_path, 'r') as f:
-        settings = json.loads(f.read().split('=')[1], object_hook=parse_boolean)
+        settings = json.loads(f.read().split(' = ')[1], object_hook=parse_boolean)
     f.close()
     return settings
 
