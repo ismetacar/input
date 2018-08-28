@@ -421,7 +421,7 @@ def set_ap_queue(content, redis_queue):
 def image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password):
     if agency_name == 'IHA':
         r = requests.get(image_url, allow_redirects=True)
-        open(image_name + '.jpg', 'wb').write(r.content)
+        open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
     elif agency_name == 'AA':
         headers = {
@@ -430,17 +430,17 @@ def image_uploader(agency_name, image_url, image_name, asset_url, token, multipl
         url = 'http://api.aa.com.tr/abone/document/{}/web'.format(image_url)
         r = requests.get(url, auth=HTTPBasicAuth(username, password), headers=headers, allow_redirects=True)
         logger.warning(str(r.status_code) + '***status******')
-        open(image_name + '.jpg', 'wb').write(r.content)
+        open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
     elif agency_name == 'Reuters':
         r = requests.get(image_url, allow_redirects=True, auth=HTTPDigestAuth(username, password))
-        open(image_name + '.jpg', 'wb').write(r.content)
+        open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
     elif agency_name == 'AP':
         r = requests.get(image_url)
-        open(image_name + '.jpg', 'wb').write(r.content)
+        open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
-    files = {'media': (image_name + '.jpg', open(image_name + '.jpg', 'rb'))}
+    files = {'media': (image_name + '.jpg', open('images/' + image_name + '.jpg', 'rb'))}
     headers = {
         'Authorization': 'Bearer {}'.format(token),
     }

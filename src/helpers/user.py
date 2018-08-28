@@ -12,7 +12,7 @@ def get_user_domains(token, user, settings):
     }
     body = {
         'where': {
-            'membership_id': user['membership_id']
+            'membership_id': user['membership']['_id']
         }
     }
 
