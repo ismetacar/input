@@ -4,6 +4,7 @@ import logging
 
 import requests
 
+from src.helpers.crypto import FernetCrpyto
 from src.tasks.insert_contents import get_token
 from src.utils.errors import BlupointError
 
@@ -119,7 +120,8 @@ def remove_contents_from_cms(configs, settings, db, redis_queue):
             config['agency_name'],
             config['domain']['name'])
         )
-        token = get_token(config['cms_username'], config['cms_password'], settings['management_api'] + '/tokens')
+        cms_password = FernetCrpyto.decrypt(settings["salt"], config['cms_password'].encode()).decode()
+        token = get_token(config['cms_username'], cms_password, settings['management_api'] + '/tokens')
         contents = get_contents_to_be_deleted(token, config, settings['management_api'])
         job_execution_id = create_job_execution('remove', config['agency_name'], config['content_type'],
                                                 config['domain'], config['membership_id'], db)

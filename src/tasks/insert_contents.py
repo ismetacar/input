@@ -4,7 +4,7 @@ import json
 import logging
 
 import requests
-
+from src.helpers.crypto import FernetCrpyto
 from src.helpers.contents import (
     get_contents_from_iha,
     get_contents_from_reuters,
@@ -170,7 +170,9 @@ def insert_contents(configs, settings, db, redis_queue):
             config['agency_name'],
             config['domain']['name'])
         )
-        token = get_token(config['cms_username'], config['cms_password'], settings['management_api'] + '/tokens')
+
+        cms_password = FernetCrpyto.decrypt(settings["salt"], config['cms_password'].encode()).decode()
+        token = get_token(config['cms_username'], cms_password, settings['management_api'] + '/tokens')
         asset_url = settings['management_api'] + '/domains/' + config['domain']['_id'] + '/files'
         cms_contents = get_agency_contents(config, asset_url, token, db, redis_queue)
         url = settings['management_api'] + '/domains/{}/contents'.format(config['domain']['_id'])
@@ -189,6 +191,21 @@ def insert_contents(configs, settings, db, redis_queue):
             if response.status_code != 201:
                 unsuccessfully_completed += 1
                 meta.append(json.loads(response.text))
+
+                db.job_executions.find_and_modify(
+                    {
+                        '_id': job_execution_id
+                    },
+                    {
+                        '$set': {
+                            'total_content_count': len(cms_contents),
+                            'successfully_completed_content': successfully_completed,
+                            'unsuccessfully_completed': unsuccessfully_completed,
+                            'meta': meta,
+                            'error': response.text
+                        }
+                    }
+                )
                 continue
 
             successfully_completed += 1
@@ -205,8 +222,8 @@ def insert_contents(configs, settings, db, redis_queue):
                     }
                 }
             )
-
             response_json = json.loads(response.text)
+
             logger.info("Content <{}> created. Agency: <{}>. Domain: {}".format(
                 response_json['_id'], config['agency_name'],
                 config['domain']['_id'])

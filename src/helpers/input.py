@@ -1,6 +1,4 @@
 import json
-from pprint import pprint
-
 import requests
 import xmltodict
 from flask import session
@@ -30,7 +28,9 @@ def parse_aa_response(string):
 
 
 def parse_dha_response(string):
-    pass
+    o = json.loads(json.dumps(xmltodict.parse(string)))
+    o = o['rss']['channel']['item'][0]
+    return o
 
 
 def parse_reuters_response(string):
@@ -160,7 +160,17 @@ def make_aa_request(agency, body):
 
 
 def make_dha_request(agency, body):
-    pass
+    import urllib.request
+    req = urllib.request.Request(body['input_url'])
+    with urllib.request.urlopen(req) as response:
+        if response.status != 200:
+            raise BlupointError(
+                err_code="errors.InvalidUsage",
+                err_msg="Agency news response is not 200",
+                status_code=response.status_code
+            )
+        response_json = parse_dha_response(response.read().decode())
+    return json.dumps(response_json)
 
 
 def make_ap_request(agency, body):

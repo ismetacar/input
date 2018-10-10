@@ -1,13 +1,25 @@
 import datetime
 import json
 import math
-
 from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
+from src.helpers.crypto import FernetCrpyto
+from src.helpers.critial_fields_helper import decrypt_critial_fields, encrypt_critial_fields
 
-from src.helpers.input import make_iha_request, make_aa_request, make_dha_request, make_reuters_request, \
-    get_content_types_field_definitions, make_ap_request
-from src.helpers.user import get_user_domains, get_domain_by_id, get_content_type_by_id
+from src.helpers.input import (
+    make_iha_request,
+    make_aa_request,
+    make_dha_request,
+    make_reuters_request,
+    get_content_types_field_definitions,
+    make_ap_request
+)
+
+from src.helpers.user import (
+    get_user_domains,
+    get_domain_by_id,
+    get_content_type_by_id
+)
 
 AGENCY_URL_LOOKUP = {
     'IHA': make_iha_request,
@@ -64,6 +76,8 @@ def init_view(app, settings):
         if request.method == 'POST':
             body = request.form.to_dict()
             body['membership_id'] = session['user']['membership']['_id']
+            #: body["password"] = FernetCrpyto.encrypt(settings["salt"], body["password"])
+            body["cms_password"] = FernetCrpyto.encrypt(settings["salt"], body["cms_password"])
             domain = get_domain_by_id(body['domain'], session['token'], settings)
             content_type = get_content_type_by_id(body['content_type'], body['domain'], session['token'], settings)
             body['domain'] = {
@@ -111,6 +125,8 @@ def init_view(app, settings):
             'membership_id': session['user']['membership']['_id']
         })
 
+        config_detail = decrypt_critial_fields(config_detail, settings['salt'])
+
         config_detail['_id'] = str(config_detail['_id'])
 
         domains = get_user_domains(session['token'], session['user'], settings)
@@ -136,8 +152,9 @@ def init_view(app, settings):
         })
 
         if request.method == 'POST':
-            body = request.form.to_dict()
+            body = encrypt_critial_fields(request.form.to_dict(), settings['salt'])
             body['membership_id'] = session['user']['membership']['_id']
+
             domain = get_domain_by_id(body['domain'], session['token'], settings)
             content_type = get_content_type_by_id(body['content_type'], body['domain'], session['token'], settings)
             body['domain'] = {
