@@ -2,7 +2,7 @@ import json
 import logging
 import requests
 import xmltodict
-
+import os
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from run import iha_queue, aa_queue, ap_queue, reuters_queue, dha_queue
 from src.utils.errors import BlupointError
@@ -286,7 +286,7 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
         image = content['photos']
         if image:
             image_url = str(image)
-            image_name = image_url.split("/")[-1]
+            image_name = os.path.splitext(image_url.split("/")[-1])[0]
 
             image = image_uploader(agency_name=agency_name,
                                    image_url=image_url,
@@ -311,7 +311,7 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
     for image in images_array:
         try:
             image_url = str(image)
-            image_name = image_url.split("/")[-1]
+            image_name = os.path.splitext(image_url.split("/")[-1])[0]
             images.append(image_uploader(agency_name=agency_name,
                                          image_url=image_url,
                                          image_name=image_name,
@@ -509,12 +509,9 @@ def image_uploader(agency_name, image_url, image_name, asset_url, token, multipl
         open('images/' + image_name + '.jpg', 'wb').write(r.content)
     elif agency_name == 'DHA':
         r = requests.get(image_url, allow_redirects=True)
-        open('images/' + image_name, 'wb').write(r.content)
+        open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
-    if agency_name == "DHA":
-        files = {'media': (image_name, open('images/' + image_name, 'rb'))}
-    else:
-        files = {'media': (image_name + '.jpg', open('images/' + image_name + '.jpg', 'rb'))}
+    files = {'media': (image_name + '.jpg', open('images/' + image_name + '.jpg', 'rb'))}
 
     headers = {
         'Authorization': 'Bearer {}'.format(token),
