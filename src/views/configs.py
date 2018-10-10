@@ -3,7 +3,6 @@ import json
 import math
 from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
-from src.helpers.crypto import FernetCrpyto
 from src.helpers.critial_fields_helper import decrypt_critial_fields, encrypt_critial_fields
 
 from src.helpers.input import (
@@ -76,8 +75,7 @@ def init_view(app, settings):
         if request.method == 'POST':
             body = request.form.to_dict()
             body['membership_id'] = session['user']['membership']['_id']
-            #: body["password"] = FernetCrpyto.encrypt(settings["salt"], body["password"])
-            body["cms_password"] = FernetCrpyto.encrypt(settings["salt"], body["cms_password"])
+            body = encrypt_critial_fields(body, settings["salt"])
             domain = get_domain_by_id(body['domain'], session['token'], settings)
             content_type = get_content_type_by_id(body['content_type'], body['domain'], session['token'], settings)
             body['domain'] = {

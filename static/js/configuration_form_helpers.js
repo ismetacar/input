@@ -49,7 +49,7 @@ function setContentTypes(token, management_api) {
                 var option = document.createElement("option");
                 option.text = content_type['name'];
                 option.value = content_type['_id'];
-                option.selected = i === 0;
+                //option.selected = i === 0;
                 elem.add(option);
             })
         },
