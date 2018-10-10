@@ -25,12 +25,15 @@
             getFieldDefinition(content_type_id, domain_id, agency_name, {{ agency_config|tojson }});
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+          document.addEventListener('DOMContentLoaded', function () {
 
-            {% if agency_config %}
-                setFields({{ agency_config|tojson }});
+          {% if agency_config %}
+               setFields({{ agency_config|tojson }});
+            {% else %}
+            if(document.querySelector('#domain').value) {
+                setContentTypes('{{ token }}', '{{ management_api }}');
+            }
             {% endif %}
-
             const checkValidations = () => {
                 let formValidation = Array.from(document.querySelectorAll('[required]')).filter(x => x.value === "").length === 0;
                 document.querySelector('.mapping-btn ').disabled = !formValidation;
@@ -41,9 +44,7 @@
                 checkValidations();
             }, true);
 
-            if(document.querySelector('#domain').value) {
-                setContentTypes('{{ token }}', '{{ management_api }}');
-            }
+
             checkValidations();
         });
 
