@@ -1,11 +1,10 @@
 import json
 import logging
-
 import requests
 import xmltodict
+import os
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
-
-from run import iha_queue, aa_queue, ap_queue, reuters_queue
+from run import iha_queue, aa_queue, ap_queue, reuters_queue, dha_queue
 from src.utils.errors import BlupointError
 
 logger = logging.getLogger('contents')
@@ -100,8 +99,22 @@ def get_contents_from_aa(agency, agency_config):
     return news
 
 
-def get_contents_from_dha(agency_config, agency):
-    pass
+def get_contents_from_dha(agency, agency_config):
+    import urllib.request
+    url = agency_config['input_url']
+    req = urllib.request.Request(url)
+    with urllib.request.urlopen(req) as response:
+        if response.status != 200:
+            raise BlupointError(
+                err_code="errors.InvalidUsage",
+                err_msg="Agency news response is not 200",
+                status_code=response.status_code
+            )
+        o = xmltodict.parse(response.read().decode())
+        items = o['rss']['channel']['item']
+        logger.info("total content count from dha: <{}>".format(len(items)))
+
+    return items
 
 
 def get_contents_from_reuters(agency, agency_config):
@@ -259,8 +272,58 @@ def upload_image_for_aa(agency_name, content, field, asset_fields, asset_url, to
     return images
 
 
-def upload_image_for_dha():
-    pass
+def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, token, username, password):
+    content = json.loads(json.dumps(content))
+    multiple = False
+    for asset_field in asset_fields:
+        if asset_field['field_id'] == field:
+            multiple = asset_field['multiple']
+
+    if 'photos' not in content:
+        return [] if multiple else {}
+
+    if not multiple:
+        image = content['photos']
+        if image:
+            image_url = str(image)
+            image_name = os.path.splitext(image_url.split("/")[-1])[0]
+
+            image = image_uploader(agency_name=agency_name,
+                                   image_url=image_url,
+                                   image_name=image_name,
+                                   asset_url=asset_url,
+                                   token=token,
+                                   multiple=multiple,
+                                   username=username,
+                                   password=password)
+
+        return image
+
+    images = []
+
+    if isinstance(content['photos'], dict):
+        images_array = [content['photos']]
+    elif isinstance(content['photos'], list):
+        images_array = content['photos']
+    else:
+        images_array = []
+
+    for image in images_array:
+        try:
+            image_url = str(image)
+            image_name = os.path.splitext(image_url.split("/")[-1])[0]
+            images.append(image_uploader(agency_name=agency_name,
+                                         image_url=image_url,
+                                         image_name=image_name,
+                                         asset_url=asset_url,
+                                         token=token,
+                                         multiple=multiple,
+                                         username=username,
+                                         password=password))
+        except TypeError as e:
+            continue
+
+    return images
 
 
 def upload_image_for_reuters(agency_name, content, field, asset_fields, asset_url, token, username, password):
@@ -398,7 +461,12 @@ def set_aa_queue(content, redis_queue):
 
 
 def set_dha_queue(content, redis_queue):
-    pass
+    if content['guid'] not in iha_queue:
+        dha_queue.append(content['guid'])
+    else:
+        return False
+
+    return True
 
 
 def set_reuters_queue(content, redis_queue):
@@ -439,11 +507,16 @@ def image_uploader(agency_name, image_url, image_name, asset_url, token, multipl
     elif agency_name == 'AP':
         r = requests.get(image_url)
         open('images/' + image_name + '.jpg', 'wb').write(r.content)
+    elif agency_name == 'DHA':
+        r = requests.get(image_url, allow_redirects=True)
+        open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
     files = {'media': (image_name + '.jpg', open('images/' + image_name + '.jpg', 'rb'))}
+
     headers = {
         'Authorization': 'Bearer {}'.format(token),
     }
+
     response = requests.post(asset_url, files=files, headers=headers)
 
     if response.status_code != 200:
