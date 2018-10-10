@@ -4,7 +4,7 @@ import json
 import logging
 
 import requests
-from src.helpers.crypto import FernetCrpyto
+from src.helpers.critial_fields_helper import decrypt_critial_fields
 from src.helpers.contents import (
     get_contents_from_iha,
     get_contents_from_reuters,
@@ -171,8 +171,8 @@ def insert_contents(configs, settings, db, redis_queue):
             config['domain']['name'])
         )
 
-        cms_password = FernetCrpyto.decrypt(settings["salt"], config['cms_password'].encode()).decode()
-        token = get_token(config['cms_username'], cms_password, settings['management_api'] + '/tokens')
+        config = decrypt_critial_fields(config, settings["salt"])
+        token = get_token(config['cms_username'],  config['cms_password'], settings['management_api'] + '/tokens')
         asset_url = settings['management_api'] + '/domains/' + config['domain']['_id'] + '/files'
         cms_contents = get_agency_contents(config, asset_url, token, db, redis_queue)
         url = settings['management_api'] + '/domains/{}/contents'.format(config['domain']['_id'])
