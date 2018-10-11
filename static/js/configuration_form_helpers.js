@@ -44,14 +44,20 @@ function setContentTypes(token, management_api) {
         dataType: 'json',
         success: function (data) {
             var elem = document.getElementById('content_type');
+
+            if(elem.selectedIndex>0)
+                var val = elem.options[elem.selectedIndex].value;
+
             elem.options.length = 0;
             data['data']['items'].forEach(function (content_type, i) {
                 var option = document.createElement("option");
                 option.text = content_type['name'];
                 option.value = content_type['_id'];
-                //option.selected = i === 0;
                 elem.add(option);
             })
+            if (val) {
+                elem.value = val
+            }
         },
         error: function (data) {
             console.info(data);
