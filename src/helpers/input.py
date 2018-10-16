@@ -8,7 +8,7 @@ from src.utils.errors import BlupointError
 
 
 def parse_iha_response(string):
-    o = xmltodict.parse(string)
+    o = json.loads(json.dumps(xmltodict.parse(string)))
     o = o['rss']['channel']['item'][0]
     return o
 
@@ -81,19 +81,6 @@ def make_iha_request(agency, body):
         )
 
     response_json = parse_iha_response(response.text)
-
-    images = []
-    response_json = dict(response_json)
-    if 'images' in response_json and response_json['images']:
-        if isinstance(response_json['images']['image'], dict):
-            image = {"link": response_json['images']['image']['#text']}
-            images.append(image)
-        elif isinstance(response_json['images']['image'], list):
-            for image in response_json['images']['image']:
-                image = {"link": image['#text']}
-                images.append(image)
-
-        response_json['images'] = images
 
     return json.dumps(response_json)
 
