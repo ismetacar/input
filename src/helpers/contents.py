@@ -26,7 +26,7 @@ def get_contents_from_iha(agency, agency_config):
             status_code=response.status_code
         )
 
-    o = xmltodict.parse(response.text)
+    o = json.loads(json.dumps(xmltodict.parse(response.text)))
     items = o['rss']['channel']['item']
     logger.info("total content count from iha: <{}>".format(len(items)))
 
@@ -175,42 +175,27 @@ def get_contents_from_ap(agency, agency_config):
 
 
 def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, token, username, password):
-    content = json.loads(json.dumps(content))
-
     multiple = False
     for asset_field in asset_fields:
         if asset_field['field_id'] == field:
             multiple = asset_field['multiple']
 
-    if 'images' not in content:
+    img = []
+
+    if "media:content" not in content:
         return [] if multiple else {}
+    elif type(content["media:content"]) == list:
 
-    if not multiple:
-        image = content['images'].get('image', {})
-        if image:
-            image_url = image['#text']
-            image_name = image['@ResimKodu']
-            image = image_uploader(agency_name, image_url, image_name, asset_url, token, multiple)
+        for media in content["media:content"]:
+            image_url = media['@url']
+            image_name = media['@ResimKodu']
+            img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+        return img
+    elif type(content["media:content"]) == dict:
+        image_url = content["media:content"]['@url']
+        image_name = content["media:content"]['@ResimKodu']
+        image = image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
         return image
-
-    images = []
-
-    if isinstance(content['images'], dict):
-        images_array = [content['images']['image']]
-    elif isinstance(content['images'], list):
-        images_array = content['images']
-    else:
-        images_array = []
-
-    for image in images_array:
-        try:
-            image_url = image['#text']
-            image_name = image['@ResimKodu']
-            images.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple))
-        except TypeError as e:
-            continue
-
-    return images
 
 
 def upload_image_for_aa(agency_name, content, field, asset_fields, asset_url, token, username, password):
