@@ -11,8 +11,7 @@ def refresh_token(api_endpoint, token):
     response = requests.post(api_endpoint, data=json.dumps(payload))
 
     if response.status_code != 200:
-        pass
-
+        return False
     response_json = json.loads(response.text)
 
     return response_json
@@ -27,7 +26,7 @@ def me(api_endpoint, token):
     response = requests.get(api_endpoint, headers=headers)
 
     if response.status_code != 201:
-        pass
+        return False
 
     response_json = json.loads(response.text)
 

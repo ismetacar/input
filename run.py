@@ -37,19 +37,24 @@ def before_request():
 
         token = session.get('token', None)
         if not token:
+            flash("Please Login to see actions")
             return redirect(url_for('login'))
 
         me_api_endpoint = settings['management_api'] + '/me'
         user = me(me_api_endpoint, token)
 
         if not user:
-            pass
+            flash("Failed to retrieve user information")
+            return redirect(url_for('login'))
 
         extracted_token = extract_token(token)
         expire_date = int((datetime.now() + timedelta(minutes=5)).timestamp())
         if extracted_token['exp'] < expire_date:
             refresh_api_endpoint = settings['management_api'] + '/tokens/refresh'
             refreshed_token = refresh_token(refresh_api_endpoint, token)
+            if not refreshed_token:
+                flash("session closed automatically because no action was taken")
+                return redirect(url_for('login'))
             session['token'] = refreshed_token['token']
 
 
