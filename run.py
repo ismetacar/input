@@ -1,13 +1,14 @@
 import json
 import os
+from collections import deque
+from datetime import timedelta, datetime
 
-import requests
 from flask import flash, session, request, url_for, redirect
 
 from src import create_app, make_celery
 from src.utils.errors import BlupointError
 from src.utils.json_jelpers import parse_boolean
-from collections import deque
+from src.utils.token import me, extract_token, refresh_token
 
 iha_queue = deque([], 1500)
 dha_queue = deque([], 1500)
@@ -37,17 +38,19 @@ def before_request():
         token = session.get('token', None)
         if not token:
             return redirect(url_for('login'))
-        url = settings['management_api'] + '/me'
 
-        headers = {
-            'Authorization': 'Bearer {}'.format(token)
-        }
+        me_api_endpoint = settings['management_api'] + '/me'
+        user = me(me_api_endpoint, token)
 
-        response = requests.get(url, headers=headers)
+        if not user:
+            pass
 
-        if response.status_code != 201:
-            flash("Token expired", "error")
-            return redirect(url_for('logout'))
+        extracted_token = extract_token(token)
+        expire_date = int((datetime.now() + timedelta(minutes=5)).timestamp())
+        if extracted_token['exp'] < expire_date:
+            refresh_api_endpoint = settings['management_api'] + '/tokens/refresh'
+            refreshed_token = refresh_token(refresh_api_endpoint, token)
+            session['token'] = refreshed_token['token']
 
 
 @app.errorhandler(Exception)

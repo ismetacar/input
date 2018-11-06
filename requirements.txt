@@ -19,4 +19,4 @@ vine==1.1.4
 Werkzeug==0.14.1
 xmltodict==0.11.0
 cryptography==1.7.2
-
+PyJWT==1.5.3
