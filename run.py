@@ -33,6 +33,22 @@ celery = make_celery(app, settings)
 
 @app.before_request
 def before_request():
+    if request.endpoint == 'healtcheck':
+        token = session.get('token', None)
+        if not token:
+            flash("Please Login to see actions")
+            return redirect(url_for('login'))
+
+        decoded_token = extract_token(token)
+        token_expire_date = decoded_token['exp']
+        if (datetime.fromtimestamp(token_expire_date) - timedelta(minutes=5)).timestamp() < datetime.now().timestamp():
+            refresh_api_endpoint = settings['management_api'] + '/tokens/refresh'
+            refreshed_token = refresh_token(refresh_api_endpoint, token)
+            if not refreshed_token:
+                flash("session closed automatically because no action was taken")
+                return redirect(url_for('login'))
+            session['token'] = refreshed_token['token']
+
     if request.endpoint not in ['login', 'static', 'logout']:
 
         token = session.get('token', None)
@@ -46,16 +62,6 @@ def before_request():
         if not user:
             flash("Failed to retrieve user information")
             return redirect(url_for('login'))
-
-        extracted_token = extract_token(token)
-        expire_date = int((datetime.now() + timedelta(minutes=5)).timestamp())
-        if extracted_token['exp'] < expire_date:
-            refresh_api_endpoint = settings['management_api'] + '/tokens/refresh'
-            refreshed_token = refresh_token(refresh_api_endpoint, token)
-            if not refreshed_token:
-                flash("session closed automatically because no action was taken")
-                return redirect(url_for('login'))
-            session['token'] = refreshed_token['token']
 
 
 @app.errorhandler(Exception)

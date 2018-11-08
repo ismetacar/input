@@ -29,6 +29,9 @@ def create_app(settings):
     from src.views.jobs import init_view
     init_view(app, settings)
 
+    from src.views.healtcheck import init_view
+    init_view(app, settings)
+
     return app
 
 
