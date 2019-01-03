@@ -1,10 +1,13 @@
+import base64
+import hashlib
+import hmac
 import json
 import logging
 import requests
 import xmltodict
 import os
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
-from run import iha_queue, aa_queue, ap_queue, reuters_queue, dha_queue
+from run import iha_queue, aa_queue, ap_queue, reuters_queue, dha_queue, hha_queue
 from src.utils.errors import BlupointError
 
 logger = logging.getLogger('contents')
@@ -174,6 +177,29 @@ def get_contents_from_ap(agency, agency_config):
     return news
 
 
+def get_content_from_hha(agency, agency_config):
+    url = agency_config['input_url']
+    app_id = agency_config['app_id']
+    app_secret = agency_config['app_secret']
+    date_response = requests.get('http://apicache.blutv.com.tr/api/date/json')
+    date = date_response.text
+
+    raw = date[1:-1].strip().encode("utf-8")
+    key = app_secret.encode('utf-8')
+    hashed = hmac.new(key, raw, hashlib.sha1)
+    digest = base64.encodebytes(hashed.digest()).decode('utf-8')
+
+    headers = {
+        'Authorization': "{}:{}".format(app_id, digest.rstrip()),
+        'X-AppId': app_id,
+        'X-Amz-Date': date[1:-1]
+    }
+
+    response = requests.get(url, headers=headers)
+
+    return json.loads(response.text)
+
+
 def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, token, username, password):
     multiple = False
     for asset_field in asset_fields:
@@ -189,7 +215,8 @@ def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, t
         for media in content["media:content"]:
             image_url = media['@url']
             image_name = media['@ResimKodu']
-            img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+            img.append(
+                image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
         return img
     elif type(content["media:content"]) == dict:
         image_url = content["media:content"]['@url']
@@ -362,6 +389,25 @@ def upload_image_for_reuters(agency_name, content, field, asset_fields, asset_ur
     return images
 
 
+def upload_image_for_hha(agency_name, content, field, asset_fields, asset_url, token, username, password):
+    multiple = False
+    for asset_field in asset_fields:
+        if asset_field['field_id'] == field:
+            multiple = asset_field['multiple']
+
+    img = []
+
+    if 'Files' not in content:
+        return [] if multiple else {}
+
+    for _file in content.get('Files', []):
+        image_url = "dumy_url + {}".format(_file.get('id', '_Id'))
+        image_name = _file.get('FileName', 'filename')
+        img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, username, password))
+
+    return img
+
+
 def upload_image_for_ap(agency_name, content, field, asset_fields, asset_url, token, username, password):
     content = json.loads(json.dumps(content))
     multiple = False
@@ -466,6 +512,14 @@ def set_reuters_queue(content, redis_queue):
 def set_ap_queue(content, redis_queue):
     if content['item_id'] not in ap_queue:
         ap_queue.append(content['item_id'])
+    else:
+        return False
+    return True
+
+
+def set_hha_queue(content, redis_queue):
+    if content['item_id'] not in ap_queue:
+        hha_queue.append(content['item_id'])
     else:
         return False
     return True
