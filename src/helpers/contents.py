@@ -215,8 +215,8 @@ def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, t
         for media in content["media:content"]:
             image_url = media['@url']
             image_name = media['@ResimKodu']
-            img.append(
-                image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+            img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+            
         return img
     elif type(content["media:content"]) == dict:
         image_url = content["media:content"]['@url']
