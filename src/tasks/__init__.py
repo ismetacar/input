@@ -15,7 +15,7 @@ def init_tasks(app, celery, settings):
                 '$lte': datetime.datetime.utcnow()
             },
             'agency_name': {
-                '$in': ['AA', 'IHA', 'Reuters', 'AP', 'DHA']
+                '$in': ['AA', 'IHA', 'Reuters', 'AP', 'DHA', 'HHA']
             }
         }))
 
@@ -43,7 +43,7 @@ def init_tasks(app, celery, settings):
                 '$lte': datetime.datetime.utcnow()
             },
             'agency_name': {
-                '$in': ['AA', 'IHA', 'Reuters', 'AP', 'DHA']
+                '$in': ['AA', 'IHA', 'Reuters', 'AP', 'DHA', 'HHA']
             }
         }))
 
