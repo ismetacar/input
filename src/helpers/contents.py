@@ -137,6 +137,7 @@ def get_contents_from_reuters(agency, agency_config):
     for new in news:
         new['images'] = new.get('media:group', {}).get('media:content', [])
 
+    logger.info("total content count from reuters: <{}>".format(len(news)))
     return news
 
 
@@ -196,8 +197,9 @@ def get_content_from_hha(agency, agency_config):
     }
 
     response = requests.get(url, headers=headers)
-
-    return json.loads(response.text)
+    news = json.loads(response.text)
+    logger.info("total content count from hha: <{}>".format(len(news)))
+    return news
 
 
 def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, token, username, password):
@@ -391,7 +393,7 @@ def upload_image_for_hha(agency_name, content, field, asset_fields, asset_url, t
     for _file in content.get('Files', []):
         image_url = "http://i.hurimg.com/i/hurriyet/100/0x0/{}".format(_file.get('_Id', 'id'))
         image_name = _file.get('FileName', 'filename')
-        img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, username, password))
+        img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
 
     return img
 
