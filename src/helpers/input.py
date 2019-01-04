@@ -1,4 +1,9 @@
+import base64
+import hashlib
+import hmac
 import json
+from pprint import pprint
+
 import requests
 import xmltodict
 from flask import session
@@ -177,6 +182,29 @@ def make_ap_request(agency, body):
     response_json = parse_ap_response(response.text)
 
     return json.dumps(response_json)
+
+
+def make_hha_request(agency, body):
+    url = body['input_url']
+    app_id = body['app_id']
+    app_secret = body['app_secret']
+    date_response = requests.get('http://apicache.blutv.com.tr/api/date')
+    date = date_response.text
+
+    raw = date[1:-1].strip().encode("utf-8")
+    key = app_secret.encode('utf-8')
+    hashed = hmac.new(key, raw, hashlib.sha1)
+    digest = base64.encodebytes(hashed.digest()).decode('utf-8')
+
+    headers = {
+        'Authorization': "{}:{}".format(app_id, digest.rstrip()),
+        'X-AppId': app_id,
+        'X-Amz-Date': date[1:-1]
+    }
+
+    response = requests.get(url, headers=headers)
+    response_json = json.loads(response.text)
+    return json.dumps(response_json[0])
 
 
 def make_reuters_request(agency, body):
