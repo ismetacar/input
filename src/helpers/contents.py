@@ -181,7 +181,7 @@ def get_content_from_hha(agency, agency_config):
     url = agency_config['input_url']
     app_id = agency_config['app_id']
     app_secret = agency_config['app_secret']
-    date_response = requests.get('http://apicache.blutv.com.tr/api/date/json')
+    date_response = requests.get('http://apicache.blutv.com.tr/api/date')
     date = date_response.text
 
     raw = date[1:-1].strip().encode("utf-8")
@@ -300,14 +300,7 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
             image_url = str(image)
             image_name = os.path.splitext(image_url.split("/")[-1])[0]
 
-            image = image_uploader(agency_name=agency_name,
-                                   image_url=image_url,
-                                   image_name=image_name,
-                                   asset_url=asset_url,
-                                   token=token,
-                                   multiple=multiple,
-                                   username=username,
-                                   password=password)
+            image = image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
 
         return image
 
@@ -324,14 +317,9 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
         try:
             image_url = str(image)
             image_name = os.path.splitext(image_url.split("/")[-1])[0]
-            images.append(image_uploader(agency_name=agency_name,
-                                         image_url=image_url,
-                                         image_name=image_name,
-                                         asset_url=asset_url,
-                                         token=token,
-                                         multiple=multiple,
-                                         username=username,
-                                         password=password))
+            images.append(
+                image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
+            )
         except TypeError as e:
             continue
 
@@ -401,7 +389,7 @@ def upload_image_for_hha(agency_name, content, field, asset_fields, asset_url, t
         return [] if multiple else {}
 
     for _file in content.get('Files', []):
-        image_url = "dumy_url + {}".format(_file.get('id', '_Id'))
+        image_url = "http://i.hurimg.com/i/hurriyet/100/0x0/{}".format(_file.get('_Id', 'id'))
         image_name = _file.get('FileName', 'filename')
         img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, username, password))
 
