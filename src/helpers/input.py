@@ -2,7 +2,6 @@ import base64
 import hashlib
 import hmac
 import json
-from pprint import pprint
 
 import requests
 import xmltodict
