@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 CELERY_IMPORTS = ('src.tasks')
-CELERY_TASK_RESULT_EXPIRES = 30
+CELERY_TASK_RESULT_EXPIRES = 30000
 CELERY_TIMEZONE = 'UTC'
 
 CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
