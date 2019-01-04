@@ -12,7 +12,7 @@ function setFields(agency_config) {
 
     let arr = [
         'agency_name', 'username', 'password',
-        'cms_username', 'cms_password', 'input_url',
+        'cms_username', 'cms_password', 'input_url', 'app_id', 'app_secret',
         'domain', 'sync_at', 'expire_time', 'path', 'username_parameter', 'password_parameter'
     ];
 
@@ -151,7 +151,7 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
     });
 }
 
-function rssResponse(input_url, username, password, agency_name) {
+function rssResponse(input_url, username, password, app_id, app_secret, agency_name) {
     var url = '/rss';
 
     $.ajax({
@@ -162,6 +162,8 @@ function rssResponse(input_url, username, password, agency_name) {
             'input_url': input_url,
             'username': username,
             'password': password,
+            'app_id': app_id,
+            'app_secret': app_secret,
             'agency_name': agency_name
         },
         success: function (data) {
@@ -197,8 +199,21 @@ function rssResponse(input_url, username, password, agency_name) {
 
 
 function showAuthFields(agency_name) {
-    if (['IHA'].includes(agency_name)) document.getElementById('auth_fields').classList = ['show-all'];
-    else if (['DHA', 'Reuters', 'AA', 'AP'].includes(agency_name)) document.getElementById('auth_fields').classList = ['show-main'];
+    if (['IHA'].includes(agency_name)){
+        document.getElementById('aws-auth-fields').classList.replace('inline-flex', 'd-none');
+        document.getElementById('auth_fields').classList = ['show-all'];
+    } else if (['DHA', 'Reuters', 'AA', 'AP'].includes(agency_name)) {
+        document.getElementById('aws-auth-fields').classList.replace('inline-flex', 'd-none');
+        document.getElementById('auth_fields').classList = ['show-main'];
+    } else if (['HHA'].includes(agency_name)) {
+        document.getElementById('auth_fields').classList = ['d-none'];
+        inputs = document.getElementById('auth_fields').querySelectorAll('input');
+        inputs.forEach(function (input_element) {
+            input_element.required = '';
+        });
+
+        document.getElementById('aws-auth-fields').classList.replace('d-none', 'inline-flex');
+    }
     else {
         inputs = document.getElementById('auth_fields').querySelectorAll('input');
         inputs.forEach(function (input_element) {

@@ -1,5 +1,6 @@
 conf = {
     "mongo_connection_string": "mongodb://localhost:27017/quark_v3_input",
+    "salt": "aZpGM4Un6bJqXpOmbrEqPLPVAepdQz1b",
     "api_version": "v1",
     "secret": "AtqVaL11EHVPEpbu2mr0yZgKXj1BnRj0",
     "default_database": "quark_v3_input",
