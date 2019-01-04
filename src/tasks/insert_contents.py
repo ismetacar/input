@@ -38,7 +38,7 @@ GET_IMAGE = {
     'HHA': contents.upload_image_for_hha
 }
 
-config_fields = ['_id', 'agency_name', 'input_url', 'domain', 'content_type', 'cms_username', 'app_id', 'app_secret'
+config_fields = ['_id', 'agency_name', 'input_url', 'domain', 'content_type', 'cms_username', 'app_id', 'app_secret',
                  'cms_password', 'sync_at', 'path', 'publish', 'membership_id', 'username_parameter',
                  'password_parameter', 'expire_time', 'next_run_time', 'next_run_time_for_delete']
 
