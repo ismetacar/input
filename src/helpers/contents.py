@@ -536,7 +536,12 @@ def image_uploader(agency_name, image_url, image_name, asset_url, token, multipl
     elif agency_name == 'AP':
         r = requests.get(image_url)
         open('images/' + image_name + '.jpg', 'wb').write(r.content)
+
     elif agency_name == 'DHA':
+        r = requests.get(image_url, allow_redirects=True)
+        open('images/' + image_name + '.jpg', 'wb').write(r.content)
+
+    elif agency_name == 'HHA':
         r = requests.get(image_url, allow_redirects=True)
         open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
