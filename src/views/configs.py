@@ -5,14 +5,7 @@ from bson import ObjectId
 from flask import render_template, request, url_for, redirect, session, Response
 from src.helpers.critial_fields_helper import decrypt_critial_fields, encrypt_critial_fields
 
-from src.helpers.input import (
-    make_iha_request,
-    make_aa_request,
-    make_dha_request,
-    make_reuters_request,
-    get_content_types_field_definitions,
-    make_ap_request
-)
+from src.helpers import input
 
 from src.helpers.user import (
     get_user_domains,
@@ -21,11 +14,12 @@ from src.helpers.user import (
 )
 
 AGENCY_URL_LOOKUP = {
-    'IHA': make_iha_request,
-    'AA': make_aa_request,
-    'DHA': make_dha_request,
-    'Reuters': make_reuters_request,
-    'AP': make_ap_request
+    'IHA': input.make_iha_request,
+    'AA': input.make_aa_request,
+    'DHA': input.make_dha_request,
+    'Reuters': input.make_reuters_request,
+    'AP': input.make_ap_request,
+    "HHA": input.make_hha_request
 }
 
 
