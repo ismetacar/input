@@ -392,7 +392,7 @@ def upload_image_for_hha(agency_name, content, field, asset_fields, asset_url, t
 
     for _file in content.get('Files', []):
         image_url = "http://i.hurimg.com/i/hurriyet/100/0x0/{}".format(_file.get('_Id', 'id'))
-        image_name = _file.get('FileName', 'filename')
+        image_name = _file.get('_Id', 'id')
         img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
 
     return img
