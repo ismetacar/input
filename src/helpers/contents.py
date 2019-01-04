@@ -506,8 +506,8 @@ def set_ap_queue(content, redis_queue):
 
 
 def set_hha_queue(content, redis_queue):
-    if content['item_id'] not in ap_queue:
-        hha_queue.append(content['item_id'])
+    if content['_Id'] not in ap_queue:
+        hha_queue.append(content['_Id'])
     else:
         return False
     return True
