@@ -6,6 +6,7 @@ from flask import render_template, request, url_for, redirect, session, Response
 from src.helpers.critial_fields_helper import decrypt_critial_fields, encrypt_critial_fields
 
 from src.helpers import input
+from src.helpers.input import get_content_types_field_definitions
 
 from src.helpers.user import (
     get_user_domains,
