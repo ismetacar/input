@@ -32,7 +32,7 @@
         {% for config in configs %}
             <tr>
                 <td>{{ config['agency_name'] }}</td>
-                <td>{{ config['input_url'] }}</td>
+                <td>{{ config['input_url'][:75] if  config['input_url']|length > 75 else config['input_url']}}</td>
                 <td>{{ config['domain']['name'] }}</td>
                 <td>{{ config['content_type']['name'] }}</td>
                 <td>
