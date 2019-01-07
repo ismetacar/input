@@ -212,19 +212,23 @@ def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, t
 
     if "media:content" not in content:
         return [] if multiple else {}
-    elif type(content["media:content"]) == list:
 
-        for media in content["media:content"]:
-            image_url = media['@url']
-            image_name = media['@ResimKodu']
-            img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
-            
-        return img
-    elif type(content["media:content"]) == dict:
-        image_url = content["media:content"]['@url']
-        image_name = content["media:content"]['@ResimKodu']
-        image = image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
-        return image
+    if isinstance(content["media:content"], dict):
+        images_array = [content["media:content"]]
+    elif isinstance(content['media:content'], list):
+        images_array = content["media:content"]
+    else:
+        images_array = []
+
+    for media in images_array:
+        image_url = media['@url']
+        image_name = media['@ResimKodu']
+        img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+        if not multiple:
+            img = img[0]
+            break
+
+    return img
 
 
 def upload_image_for_aa(agency_name, content, field, asset_fields, asset_url, token, username, password):
