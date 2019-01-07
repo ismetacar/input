@@ -1,10 +1,13 @@
+import base64
+import hashlib
+import hmac
 import json
 import logging
 import requests
 import xmltodict
 import os
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
-from run import iha_queue, aa_queue, ap_queue, reuters_queue, dha_queue
+from run import iha_queue, aa_queue, ap_queue, reuters_queue, dha_queue, hha_queue
 from src.utils.errors import BlupointError
 
 logger = logging.getLogger('contents')
@@ -134,6 +137,7 @@ def get_contents_from_reuters(agency, agency_config):
     for new in news:
         new['images'] = new.get('media:group', {}).get('media:content', [])
 
+    logger.info("total content count from reuters: <{}>".format(len(news)))
     return news
 
 
@@ -174,6 +178,30 @@ def get_contents_from_ap(agency, agency_config):
     return news
 
 
+def get_content_from_hha(agency, agency_config):
+    url = agency_config['input_url']
+    app_id = agency_config['app_id']
+    app_secret = agency_config['app_secret']
+    date_response = requests.get('http://apicache.blutv.com.tr/api/date')
+    date = date_response.text
+
+    raw = date[1:-1].strip().encode("utf-8")
+    key = app_secret.encode('utf-8')
+    hashed = hmac.new(key, raw, hashlib.sha1)
+    digest = base64.encodebytes(hashed.digest()).decode('utf-8')
+
+    headers = {
+        'Authorization': "{}:{}".format(app_id, digest.rstrip()),
+        'X-AppId': app_id,
+        'X-Amz-Date': date[1:-1]
+    }
+
+    response = requests.get(url, headers=headers)
+    news = json.loads(response.text)
+    logger.info("total content count from hha: <{}>".format(len(news)))
+    return news
+
+
 def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, token, username, password):
     multiple = False
     for asset_field in asset_fields:
@@ -190,6 +218,7 @@ def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, t
             image_url = media['@url']
             image_name = media['@ResimKodu']
             img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+            
         return img
     elif type(content["media:content"]) == dict:
         image_url = content["media:content"]['@url']
@@ -273,14 +302,7 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
             image_url = str(image)
             image_name = os.path.splitext(image_url.split("/")[-1])[0]
 
-            image = image_uploader(agency_name=agency_name,
-                                   image_url=image_url,
-                                   image_name=image_name,
-                                   asset_url=asset_url,
-                                   token=token,
-                                   multiple=multiple,
-                                   username=username,
-                                   password=password)
+            image = image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
 
         return image
 
@@ -297,14 +319,9 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
         try:
             image_url = str(image)
             image_name = os.path.splitext(image_url.split("/")[-1])[0]
-            images.append(image_uploader(agency_name=agency_name,
-                                         image_url=image_url,
-                                         image_name=image_name,
-                                         asset_url=asset_url,
-                                         token=token,
-                                         multiple=multiple,
-                                         username=username,
-                                         password=password))
+            images.append(
+                image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
+            )
         except TypeError as e:
             continue
 
@@ -360,6 +377,28 @@ def upload_image_for_reuters(agency_name, content, field, asset_fields, asset_ur
                 )
 
     return images
+
+
+def upload_image_for_hha(agency_name, content, field, asset_fields, asset_url, token, username, password):
+    multiple = False
+    for asset_field in asset_fields:
+        if asset_field['field_id'] == field:
+            multiple = asset_field['multiple']
+
+    img = []
+
+    if 'Files' not in content:
+        return [] if multiple else {}
+
+    for _file in content.get('Files', []):
+        image_name = _file.get('_Id', 'id')
+        image_url = "http://i.hurimg.com/i/hurriyet/100/0x0/{}".format(_file.get('_Id', 'id'))
+        img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+        if not multiple:
+            img = img[0]
+            break
+
+    return img
 
 
 def upload_image_for_ap(agency_name, content, field, asset_fields, asset_url, token, username, password):
@@ -471,8 +510,16 @@ def set_ap_queue(content, redis_queue):
     return True
 
 
+def set_hha_queue(content, redis_queue):
+    if content['_Id'] not in hha_queue:
+        hha_queue.append(content['_Id'])
+    else:
+        return False
+    return True
+
+
 def image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password):
-    if agency_name == 'IHA':
+    if agency_name in ['IHA', 'DHA', 'HHA']:
         r = requests.get(image_url, allow_redirects=True)
         open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
@@ -491,9 +538,6 @@ def image_uploader(agency_name, image_url, image_name, asset_url, token, multipl
 
     elif agency_name == 'AP':
         r = requests.get(image_url)
-        open('images/' + image_name + '.jpg', 'wb').write(r.content)
-    elif agency_name == 'DHA':
-        r = requests.get(image_url, allow_redirects=True)
         open('images/' + image_name + '.jpg', 'wb').write(r.content)
 
     files = {'media': (image_name + '.jpg', open('images/' + image_name + '.jpg', 'rb'))}

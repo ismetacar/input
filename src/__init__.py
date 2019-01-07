@@ -44,14 +44,14 @@ def make_celery(app, settings):
     celery.conf.update(app.config)
     celery.config_from_object(celery_config)
 
-    TaskBase = celery.Task
+    task_base = celery.Task
 
-    class ContextTask(TaskBase):
+    class ContextTask(task_base):
         abstract = True
 
         def __call__(self, *args, **kwargs):
             with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
+                return task_base.__call__(self, *args, **kwargs)
 
     celery.Task = ContextTask
 

@@ -11,9 +11,11 @@
             var input_url = document.getElementById('input_url').value;
             var username = document.getElementById('username').value;
             var password = document.getElementById('password').value;
+            var app_id = document.getElementById('app_id').value;
+            var app_secret = document.getElementById('app_secret').value;
             var agency_name = document.getElementById('agency_name').value;
 
-            rssResponse(input_url, username, password, agency_name)
+            rssResponse(input_url, username, password, app_id, app_secret, agency_name)
         }
 
         function getInputFields() {
@@ -83,6 +85,16 @@
                 <label for="input_url">Agency Url</label>
                 <input type="text" class="form-control" name="input_url" id="input_url" placeholder="http://..."
                        required>
+            </div>
+        </div>
+        <div class="form-row d-none" id="aws-auth-fields">
+            <div class="form-group col-md-6">
+                <label for="app_id">App Id</label>
+                <input type="text" class="form-control" name="app_id" id="app_id" placeholder="App Id" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="app_secret">App Secret</label>
+                <input type="text" class="form-control" name="app_secret" id="app_secret" placeholder="App Secret">
             </div>
         </div>
         <div class="form-row show-all" id="auth_fields">

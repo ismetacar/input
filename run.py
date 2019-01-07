@@ -8,13 +8,14 @@ from flask import flash, session, request, url_for, redirect
 from src import create_app, make_celery
 from src.utils.errors import BlupointError
 from src.utils.json_jelpers import parse_boolean
-from src.utils.token import me, extract_token, refresh_token
+from src.utils.token import me_user, extract_token, refresh_token
 
 iha_queue = deque([], 1500)
 dha_queue = deque([], 1500)
 aa_queue = deque([], 1500)
 reuters_queue = deque([], 1500)
 ap_queue = deque([], 1500)
+hha_queue = deque([], 1500)
 
 
 def config_settings():
@@ -57,7 +58,7 @@ def before_request():
             return redirect(url_for('login'))
 
         me_api_endpoint = settings['management_api'] + '/me'
-        user = me(me_api_endpoint, token)
+        user = me_user(me_api_endpoint, token)
 
         if not user:
             flash("Failed to retrieve user information")

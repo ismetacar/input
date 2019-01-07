@@ -5,43 +5,40 @@ import logging
 
 import requests
 from src.helpers.critial_fields_helper import decrypt_critial_fields
-from src.helpers.contents import (
-    get_contents_from_iha,
-    get_contents_from_reuters,
-    get_contents_from_aa,
-    get_contents_from_dha,
-    set_iha_queue, set_dha_queue, set_aa_queue, set_reuters_queue, upload_image_for_iha, upload_image_for_dha,
-    upload_image_for_aa, upload_image_for_reuters, get_contents_from_ap, set_ap_queue, upload_image_for_ap)
+from src.helpers import contents
 
 from src.utils.errors import BlupointError
 
 logger = logging.getLogger('Insert Contents...')
 
 GET_CONTENTS = {
-    'IHA': get_contents_from_iha,
-    'DHA': get_contents_from_dha,
-    'AA': get_contents_from_aa,
-    'Reuters': get_contents_from_reuters,
-    'AP': get_contents_from_ap
+    'IHA': contents.get_contents_from_iha,
+    'DHA': contents.get_contents_from_dha,
+    'AA': contents.get_contents_from_aa,
+    'Reuters': contents.get_contents_from_reuters,
+    'AP': contents.get_contents_from_ap,
+    'HHA': contents.get_content_from_hha
 }
 
 SET_TO_QUEUE = {
-    'IHA': set_iha_queue,
-    'DHA': set_dha_queue,
-    'AA': set_aa_queue,
-    'Reuters': set_reuters_queue,
-    'AP': set_ap_queue
+    'IHA': contents.set_iha_queue,
+    'DHA': contents.set_dha_queue,
+    'AA': contents.set_aa_queue,
+    'Reuters': contents.set_reuters_queue,
+    'AP': contents.set_ap_queue,
+    'HHA': contents.set_hha_queue
 }
 
 GET_IMAGE = {
-    'IHA': upload_image_for_iha,
-    'DHA': upload_image_for_dha,
-    'AA': upload_image_for_aa,
-    'Reuters': upload_image_for_reuters,
-    'AP': upload_image_for_ap
+    'IHA': contents.upload_image_for_iha,
+    'DHA': contents.upload_image_for_dha,
+    'AA': contents.upload_image_for_aa,
+    'Reuters': contents.upload_image_for_reuters,
+    'AP': contents.upload_image_for_ap,
+    'HHA': contents.upload_image_for_hha
 }
 
-config_fields = ['_id', 'agency_name', 'input_url', 'domain', 'content_type', 'cms_username',
+config_fields = ['_id', 'agency_name', 'input_url', 'domain', 'content_type', 'cms_username', 'app_id', 'app_secret',
                  'cms_password', 'sync_at', 'path', 'publish', 'membership_id', 'username_parameter',
                  'password_parameter', 'expire_time', 'next_run_time', 'next_run_time_for_delete']
 
@@ -102,7 +99,7 @@ def get_agency_contents(config, asset_url, token, db, redis_queue):
         'name': config['agency_name']
     })
 
-    contents = GET_CONTENTS[agency['name']](agency, config)
+    agency_contents = GET_CONTENTS[agency['name']](agency, config)
     cms_contents = []
     agency_name = config['agency_name']
     _config = copy.deepcopy(config)
@@ -116,10 +113,8 @@ def get_agency_contents(config, asset_url, token, db, redis_queue):
     } for x in config['field_definitions'] if x['type'] == 'asset']
 
     _config.pop('field_definitions', None)
-    i = 0
-    for content in contents:
+    for content in agency_contents:
         if not SET_TO_QUEUE[agency['name']](content, redis_queue):
-            i += 1
             continue
 
         cms_content = {
@@ -172,7 +167,7 @@ def insert_contents(configs, settings, db, redis_queue):
         )
 
         config = decrypt_critial_fields(config, settings["salt"])
-        token = get_token(config['cms_username'],  config['cms_password'], settings['management_api'] + '/tokens')
+        token = get_token(config['cms_username'], config['cms_password'], settings['management_api'] + '/tokens')
         asset_url = settings['management_api'] + '/domains/' + config['domain']['_id'] + '/files'
         cms_contents = get_agency_contents(config, asset_url, token, db, redis_queue)
         url = settings['management_api'] + '/domains/{}/contents'.format(config['domain']['_id'])
