@@ -295,15 +295,15 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
 
     img = []
 
+    if 'photos' not in content:
+        return [] if multiple else {}
+
     if isinstance(content['photos'], dict):
         images_array = [content['photos']]
     elif isinstance(content['photos'], list):
         images_array = content['photos']
     else:
         images_array = []
-
-    if 'photos' not in content:
-        return [] if multiple else {}
 
     for _file in images_array:
         image_url = str(_file)
