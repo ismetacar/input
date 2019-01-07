@@ -1,6 +1,6 @@
 function SetSelectValue(element_id, text, value) {
-    var elem = document.getElementById(element_id);
-    var option = document.createElement("option");
+    elem = document.getElementById(element_id);
+    option = document.createElement("option");
     option.text = text;
     option.value = value;
     option.selected = true;
@@ -10,19 +10,19 @@ function SetSelectValue(element_id, text, value) {
 function setFields(agency_config) {
     if (!agency_config) return;
 
-    let arr = [
+    arr = [
         'agency_name', 'username', 'password',
         'cms_username', 'cms_password', 'input_url', 'app_id', 'app_secret',
         'domain', 'sync_at', 'expire_time', 'path', 'username_parameter', 'password_parameter'
     ];
 
-    for (let item of arr) {
+    for (item of arr) {
         if (document.getElementById(item)) {
             document.getElementById(item).value = item === 'domain' ? agency_config[item]._id : agency_config[item];
         }
     }
 
-    var formValidation = Array.from(document.querySelectorAll('[required]')).filter(x => x.value === "").length === 0;
+    formValidation = Array.from(document.querySelectorAll('[required]')).filter(x => x.value === "").length === 0;
     document.querySelector('.mapping-btn ').disabled = !formValidation;
 
     showAuthFields(agency_config.agency_name);
@@ -32,7 +32,7 @@ function setFields(agency_config) {
 }
 
 function setContentTypes(token, management_api) {
-    var url = management_api + '/domains/' + document.getElementById('domain').value + '/content-types/_query';
+    url = management_api + '/domains/' + document.getElementById('domain').value + '/content-types/_query';
     $.ajax({
         url: url,
         type: 'POST',
@@ -43,14 +43,14 @@ function setContentTypes(token, management_api) {
         },
         dataType: 'json',
         success: function (data) {
-            var elem = document.getElementById('content_type');
+            elem = document.getElementById('content_type');
 
             if(elem.selectedIndex>0)
-                var val = elem.options[elem.selectedIndex].value;
+                val = elem.options[elem.selectedIndex].value;
 
             elem.options.length = 0;
             data['data']['items'].forEach(function (content_type, i) {
-                var option = document.createElement("option");
+                option = document.createElement("option");
                 option.text = content_type['name'];
                 option.value = content_type['_id'];
                 elem.add(option);
@@ -69,9 +69,9 @@ function setContentTypes(token, management_api) {
 }
 
 function getFieldDefinition(content_type_id, domain_id, agency_name, agency_config) {
-    var url = '/configs/mapping';
+    url = '/configs/mapping';
 
-    let agency_config_id = window.location.href.toString().split(window.location.host)[1].split('configs/')[1];
+    agency_config_id = window.location.href.toString().split(window.location.host)[1].split('configs/')[1];
 
     $.ajax({
         url: url,
@@ -85,7 +85,7 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
         dataType: 'json',
         success: function (data) {
             window.field_definitions = data.field_definitions;
-            var labelListHtml =
+            labelListHtml =
                 "<div class='row'>" +
                 "<div class='col-md-4'>" +
                 "<label><b>Content Type's Fields</b></label>" +
@@ -110,15 +110,15 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
 
             window.field_definitions.forEach(function (item) {
 
-                var itemDivStr = "<div class='row' id='mapping_form_div'><div class='col-md-4' id='mapping_form_label' style='margin-top: 12px;'>";
-                var itemLabelStr = "<label>" + item.name + ":" + "</label>";
-                var itemDivEndStr = "</div>";
+                itemDivStr = "<div class='row' id='mapping_form_div'><div class='col-md-4' id='mapping_form_label' style='margin-top: 12px;'>";
+                itemLabelStr = "<label>" + item.name + ":" + "</label>";
+                itemDivEndStr = "</div>";
 
-                var selectItems = '<div class="form-group col-md-6"><select onchange="getRssResponse();" name="' + item.field_id + '" id="' + item.field_id + '" class="form-control"';
+                selectItems = '<div class="form-group col-md-6"><select onchange="getRssResponse();" name="' + item.field_id + '" id="' + item.field_id + '" class="form-control"';
                 selectItems += "><option value=''></option>";
 
                 data.agency_fields.forEach(function (selectItem) {
-                    let itemSelectPart = "<option value=" + selectItem + ">" + selectItem + "</option>";
+                    itemSelectPart = "<option value=" + selectItem + ">" + selectItem + "</option>";
                     selectItems += itemSelectPart;
                 });
                 selectItems += "</select></div>";
@@ -131,9 +131,9 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
 
             document.getElementById('preview_button').classList.remove('d-none');
 
-            var field_ids = [];
-            var len = window.field_definitions.length;
-            for (var i = 0; i < len; i++) {
+            field_ids = [];
+            len = window.field_definitions.length;
+            for (i = 0; i < len; i++) {
                 field_ids.push(window.field_definitions[i].field_id);
             }
 
@@ -152,7 +152,7 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
 }
 
 function rssResponse(input_url, username, password, app_id, app_secret, agency_name) {
-    var url = '/rss';
+    url = '/rss';
 
     $.ajax({
         url,
@@ -168,19 +168,19 @@ function rssResponse(input_url, username, password, app_id, app_secret, agency_n
         },
         success: function (data) {
 
-            let field_ids = [];
-            let len = window.field_definitions.length;
-            for (var i = 0; i < len; i++) {
+            field_ids = [];
+            len = window.field_definitions.length;
+            for (i = 0; i < len; i++) {
                 field_ids.push(window.field_definitions[i].field_id);
             }
 
-            len mapped_fields = {};
+            mapped_fields = {};
             field_ids.forEach(function (field_id) {
                 mapped_fields[field_id] = document.getElementById(field_id).value;
             });
 
-            let pre_json = {};
-            for (var j = 0; j < len; j++) {
+            pre_json = {};
+            for (j = 0; j < len; j++) {
                 pre_json[field_ids[j]] = data[mapped_fields[field_ids[j]]];
             }
 
@@ -207,7 +207,7 @@ function showAuthFields(agency_name) {
         document.getElementById('auth_fields').classList = ['show-main'];
     } else if (['HHA'].includes(agency_name)) {
         document.getElementById('auth_fields').classList = ['d-none'];
-        let inputs = document.getElementById('auth_fields').querySelectorAll('input');
+        inputs = document.getElementById('auth_fields').querySelectorAll('input');
         inputs.forEach(function (input_element) {
             input_element.required = '';
         });
