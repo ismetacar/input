@@ -202,9 +202,17 @@ function showAuthFields(agency_name) {
     if (['IHA'].includes(agency_name)){
         document.getElementById('aws-auth-fields').classList.replace('inline-flex', 'd-none');
         document.getElementById('auth_fields').classList = ['show-all'];
+        inputs = document.getElementById('aws-auth-fields').querySelectorAll('input');
+        inputs.forEach(function (input_element) {
+            input_element.required = '';
+        });
     } else if (['DHA', 'Reuters', 'AA', 'AP'].includes(agency_name)) {
         document.getElementById('aws-auth-fields').classList.replace('inline-flex', 'd-none');
         document.getElementById('auth_fields').classList = ['show-main'];
+        inputs = document.getElementById('aws-auth-fields').querySelectorAll('input');
+        inputs.forEach(function (input_element) {
+            input_element.required = '';
+        });
     } else if (['HHA'].includes(agency_name)) {
         document.getElementById('auth_fields').classList = ['d-none'];
         inputs = document.getElementById('auth_fields').querySelectorAll('input');
