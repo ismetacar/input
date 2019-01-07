@@ -17,7 +17,7 @@ def refresh_token(api_endpoint, token):
     return response_json
 
 
-def me(api_endpoint, token):
+def me_user(api_endpoint, token):
 
     headers = {
         'Authorization': 'Bearer {}'.format(token)
