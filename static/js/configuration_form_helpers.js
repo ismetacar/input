@@ -16,7 +16,7 @@ function setFields(agency_config) {
         'domain', 'sync_at', 'expire_time', 'path', 'username_parameter', 'password_parameter'
     ];
 
-    for (item of arr) {
+    for (let item of arr) {
         if (document.getElementById(item)) {
             document.getElementById(item).value = item === 'domain' ? agency_config[item]._id : agency_config[item];
         }
@@ -71,7 +71,7 @@ function setContentTypes(token, management_api) {
 function getFieldDefinition(content_type_id, domain_id, agency_name, agency_config) {
     var url = '/configs/mapping';
 
-    agency_config_id = window.location.href.toString().split(window.location.host)[1].split('configs/')[1];
+    let agency_config_id = window.location.href.toString().split(window.location.host)[1].split('configs/')[1];
 
     $.ajax({
         url: url,
@@ -118,7 +118,7 @@ function getFieldDefinition(content_type_id, domain_id, agency_name, agency_conf
                 selectItems += "><option value=''></option>";
 
                 data.agency_fields.forEach(function (selectItem) {
-                    itemSelectPart = "<option value=" + selectItem + ">" + selectItem + "</option>";
+                    let itemSelectPart = "<option value=" + selectItem + ">" + selectItem + "</option>";
                     selectItems += itemSelectPart;
                 });
                 selectItems += "</select></div>";
@@ -168,20 +168,20 @@ function rssResponse(input_url, username, password, app_id, app_secret, agency_n
         },
         success: function (data) {
 
-            field_ids = [];
-            len = window.field_definitions.length;
+            let field_ids = [];
+            let len = window.field_definitions.length;
             for (var i = 0; i < len; i++) {
                 field_ids.push(window.field_definitions[i].field_id);
             }
 
-            mapped_fields = {};
+            len mapped_fields = {};
             field_ids.forEach(function (field_id) {
                 mapped_fields[field_id] = document.getElementById(field_id).value;
             });
 
-            pre_json = {};
-            for (var i = 0; i < len; i++) {
-                pre_json[field_ids[i]] = data[mapped_fields[field_ids[i]]];
+            let pre_json = {};
+            for (var j = 0; j < len; j++) {
+                pre_json[field_ids[j]] = data[mapped_fields[field_ids[j]]];
             }
 
             document.getElementById('preview_row').innerHTML = "<pre style='white-space: pre-wrap'>" + JSON.stringify(pre_json, undefined, 4) + "</pre>";
@@ -207,7 +207,7 @@ function showAuthFields(agency_name) {
         document.getElementById('auth_fields').classList = ['show-main'];
     } else if (['HHA'].includes(agency_name)) {
         document.getElementById('auth_fields').classList = ['d-none'];
-        inputs = document.getElementById('auth_fields').querySelectorAll('input');
+        let inputs = document.getElementById('auth_fields').querySelectorAll('input');
         inputs.forEach(function (input_element) {
             input_element.required = '';
         });
