@@ -309,8 +309,8 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
         return [] if multiple else {}
 
     for _file in images_array:
-        image_name = _file.get('_Id', 'id')
-        image_url = "http://i.hurimg.com/i/hurriyet/100/0x0/{}".format(_file.get('_Id', 'id'))
+        image_url = str(_file)
+        image_name = os.path.splitext(image_url.split("/")[-1])[0]
         img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
         if not multiple:
             img = img[0]
