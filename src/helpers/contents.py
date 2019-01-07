@@ -293,9 +293,6 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
         if asset_field['field_id'] == field:
             multiple = asset_field['multiple']
 
-    if 'photos' not in content:
-        return [] if multiple else {}
-
     img = []
 
     if isinstance(content['photos'], dict):
@@ -305,7 +302,7 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
     else:
         images_array = []
 
-    if 'Files' not in content:
+    if 'photos' not in content:
         return [] if multiple else {}
 
     for _file in images_array:
