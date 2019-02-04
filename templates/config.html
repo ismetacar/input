@@ -49,6 +49,12 @@
 
             checkValidations();
         });
+        /*
+        function toggleStatus () {
+            var currentValue = document.querySelector('#agency_status').value;
+            document.querySelector('#agency_status').value = currentValue === 'on' ? 'off' : 'on';
+        }
+        */
 
     </script>
 {% endblock %}
@@ -72,14 +78,16 @@
           action="{{ url_for('configs_create') }}" {% endif %}
           method="POST">
         <div class="form-row">
+        <!--
             <div class="form-group col-md-12">
                 <label for="input_url">Agency Status</label>
                 <label class="switch switch-left-right">
                     <input name="agency_status" id="agency_status" class="switch-input"  type="checkbox">
-                    <span class="switch-label" data-on="Active" data-off="Passive"></span>
+                    <span class="switch-label" data-on="Active" data-off="Passive" onclick="toggleStatus();"></span>
                     <span class="switch-handle"></span>
                 </label>
             </div>
+        -->
             <div class="form-group col-md-6">
                 <label for="domain">Agency</label>
                 <select name="agency_name" id="agency_name" class="form-control" onchange="showAuthFields(this.value);">
