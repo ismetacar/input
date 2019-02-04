@@ -180,23 +180,27 @@ def get_contents_from_ap(agency, agency_config):
 
 def get_content_from_hha(agency, agency_config):
     url = agency_config['input_url']
-    app_id = agency_config['app_id']
-    app_secret = agency_config['app_secret']
-    date_response = requests.get('http://apicache.blutv.com.tr/api/date')
-    date = date_response.text
 
-    raw = date[1:-1].strip().encode("utf-8")
-    key = app_secret.encode('utf-8')
-    hashed = hmac.new(key, raw, hashlib.sha1)
-    digest = base64.encodebytes(hashed.digest()).decode('utf-8')
+    #: TODO: use ip restriction instead of http authentication
+    #: app_id = agency_config['app_id']
+    #: app_secret = agency_config['app_secret']
+    #: date_response = requests.get('http://apicache.blutv.com.tr/api/date')
+    #: date = date_response.text
+    #:
+    #: raw = date[1:-1].strip().encode("utf-8")
+    #: key = app_secret.encode('utf-8')
+    #: hashed = hmac.new(key, raw, hashlib.sha1)
+    #: digest = base64.encodebytes(hashed.digest()).decode('utf-8')
+    #:
+    #: headers = {
+    #:     'Authorization': "{}:{}".format(app_id, digest.rstrip()),
+    #:     'X-AppId': app_id,
+    #:     'X-Amz-Date': date[1:-1]
+    #: }
+    #:
+    #: response = requests.get(url, headers=headers)
 
-    headers = {
-        'Authorization': "{}:{}".format(app_id, digest.rstrip()),
-        'X-AppId': app_id,
-        'X-Amz-Date': date[1:-1]
-    }
-
-    response = requests.get(url, headers=headers)
+    response = requests.get(url)
     news = json.loads(response.text)
     logger.info("total content count from hha: <{}>".format(len(news)))
     return news

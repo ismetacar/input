@@ -16,7 +16,8 @@ def init_tasks(app, celery, settings):
             },
             'agency_name': {
                 '$in': ['AA', 'IHA', 'Reuters', 'AP', 'DHA', 'HHA']
-            }
+            },
+            'agency_status': 'active'
         }))
 
         for config in configs:
@@ -44,7 +45,8 @@ def init_tasks(app, celery, settings):
             },
             'agency_name': {
                 '$in': ['AA', 'IHA', 'Reuters', 'AP', 'DHA', 'HHA']
-            }
+            },
+            'agency_status': 'active'
         }))
 
         for config in configs:

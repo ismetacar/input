@@ -19,6 +19,16 @@ function setFields(agency_config) {
     for (item of arr) {
         if (document.getElementById(item)) {
             document.getElementById(item).value = item === 'domain' ? agency_config[item]._id : agency_config[item];
+            /*
+            if (item === 'domain') {
+                document.getElementById(item).value = agency_config[item]._id;
+            } else if (item === 'agency_status') {
+                document.getElementById(item).value = agency_config[item];
+                document.getElementById(item).checked = agency_config[item] === 'on';
+            } else {
+                document.getElementById(item).value = agency_config[item];
+            }
+            */
         }
     }
 
