@@ -40,7 +40,8 @@ GET_IMAGE = {
 
 config_fields = ['_id', 'agency_name', 'input_url', 'domain', 'content_type', 'cms_username', 'app_id', 'app_secret',
                  'cms_password', 'sync_at', 'path', 'publish', 'membership_id', 'username_parameter',
-                 'password_parameter', 'expire_time', 'next_run_time', 'next_run_time_for_delete']
+                 'password_parameter', 'expire_time', 'next_run_time', 'next_run_time_for_delete',
+                 'agency_status', 'field_definitions', 'username', 'password']
 
 
 def get_token(username, password, token_api):
