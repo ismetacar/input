@@ -77,10 +77,10 @@ def init_tasks(app, celery, settings):
         }
 
         for queue in agency_queues.keys():
-            for elem in agency_queues[queue]:
+            for content_id in agency_queues[queue]:
                 app.db.queues.save({
                     'agency_type': queue,
-                    'content_id': elem
+                    'content_id': content_id
                 })
 
     @celery.task()
@@ -97,7 +97,7 @@ def init_tasks(app, celery, settings):
         for queue in agency_queues.keys():
             queues_cursor = app.db.queues.find({
                 'agency_type': queue
-            }).limit(15000).sort({'_id': -1})
+            }).sort({'_id': -1}).limit(15000)
 
             agency_queues[queue].clear()
             queues_cursor.sort({'_id': 1})
