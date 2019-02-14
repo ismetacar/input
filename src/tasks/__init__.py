@@ -99,7 +99,6 @@ def init_tasks(app, celery, settings):
                 'agency_type': queue
             }).sort({'_id': -1}).limit(15000)
 
-            agency_queues[queue].clear()
             queues_cursor.sort({'_id': 1})
             for doc in queues_cursor:
                 agency_queues[queue].append(doc['content_id'])
