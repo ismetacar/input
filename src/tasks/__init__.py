@@ -1,5 +1,6 @@
 import datetime
 
+from run import iha_queue, dha_queue, aa_queue, reuters_queue, ap_queue, hha_queue
 from src.tasks.delete_contents import remove_contents_from_cms
 from src.tasks.insert_contents import insert_contents
 
@@ -63,3 +64,41 @@ def init_tasks(app, celery, settings):
             )
 
         remove_contents_from_cms(configs, settings, app.db, app.redis_queue)
+
+    @celery.task()
+    def sync_queues_to_mongo():
+        agency_queues = {
+            'iha_queue': iha_queue,
+            'dha_queue': dha_queue,
+            'aa_queue': aa_queue,
+            'reuters_queue': reuters_queue,
+            'ap_queue': ap_queue,
+            'hha_queue': hha_queue
+        }
+
+        for queue in agency_queues.keys():
+            for content_id in agency_queues[queue]:
+                app.db.queues.save({
+                    'agency_type': queue,
+                    'content_id': content_id
+                })
+
+    @celery.task()
+    def sync_mongo_to_queues():
+        agency_queues = {
+            'iha_queue': iha_queue,
+            'dha_queue': dha_queue,
+            'aa_queue': aa_queue,
+            'reuters_queue': reuters_queue,
+            'ap_queue': ap_queue,
+            'hha_queue': hha_queue
+        }
+
+        for queue in agency_queues.keys():
+            queues_cursor = app.db.queues.find({
+                'agency_type': queue
+            }).sort({'_id': -1}).limit(15000)
+
+            queues_cursor.sort({'_id': 1})
+            for doc in queues_cursor:
+                agency_queues[queue].append(doc['content_id'])

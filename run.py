@@ -10,12 +10,12 @@ from src.utils.errors import BlupointError
 from src.utils.json_jelpers import parse_boolean
 from src.utils.token import me_user, extract_token, refresh_token
 
-iha_queue = deque([], 1500)
-dha_queue = deque([], 1500)
-aa_queue = deque([], 1500)
-reuters_queue = deque([], 1500)
-ap_queue = deque([], 1500)
-hha_queue = deque([], 1500)
+iha_queue = deque([], 15000)
+dha_queue = deque([], 15000)
+aa_queue = deque([], 15000)
+reuters_queue = deque([], 15000)
+ap_queue = deque([], 15000)
+hha_queue = deque([], 15000)
 
 
 def config_settings():
