@@ -67,9 +67,17 @@ def init_tasks(app, celery, settings):
 
     @celery.task()
     def sync_queues_to_mongo():
-        agency_queues = [iha_queue, dha_queue, aa_queue, reuters_queue, ap_queue, hha_queue]
-        for queue in agency_queues:
-            for elem in queue:
+        agency_queues = {
+            'iha_queue': iha_queue,
+            'dha_queue': dha_queue,
+            'aa_queue': aa_queue,
+            'reuters_queue': reuters_queue,
+            'ap_queue': ap_queue,
+            'hha_queue': hha_queue
+        }
+
+        for queue in agency_queues.keys():
+            for elem in agency_queues[queue]:
                 app.db.queues.save({
                     'agency_type': queue,
                     'content_id': elem
