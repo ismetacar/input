@@ -461,54 +461,59 @@ def upload_image_for_ap(agency_name, content, field, asset_fields, asset_url, to
     return images
 
 
-def set_iha_queue(content, redis_queue):
-    if content['HaberKodu'] not in iha_queue:
-        iha_queue.append(content['HaberKodu'])
+def set_iha_queue(content, config_id, redis_queue):
+    key = '{}:{}'.format(content['HaberKodu'], config_id)
+    if key not in iha_queue:
+        iha_queue.append(key)
     else:
         return False
 
     return True
 
 
-def set_aa_queue(content, redis_queue):
-    logger.warning(content['item_id'])
-    if content['item_id'] not in aa_queue:
-        aa_queue.append(content['item_id'])
+def set_aa_queue(content, config_id, redis_queue):
+    key = '{}:{}'.format(content['item_id'], config_id)
+    if key not in aa_queue:
+        aa_queue.append(key)
     else:
         return False
 
     return True
 
 
-def set_dha_queue(content, redis_queue):
-    if content['guid'] not in iha_queue:
-        dha_queue.append(content['guid'])
+def set_dha_queue(content, config_id, redis_queue):
+    key = '{}:{}'.format(content['guid'], config_id)
+    if key not in iha_queue:
+        dha_queue.append(key)
     else:
         return False
 
     return True
 
 
-def set_reuters_queue(content, redis_queue):
-    if content['link'] not in iha_queue:
-        reuters_queue.append(content['link'])
+def set_reuters_queue(content, config_id, redis_queue):
+    key = '{}:{}'.format(content['link'], config_id)
+    if key not in iha_queue:
+        reuters_queue.append(key)
     else:
         return False
 
     return True
 
 
-def set_ap_queue(content, redis_queue):
-    if content['item_id'] not in ap_queue:
-        ap_queue.append(content['item_id'])
+def set_ap_queue(content, config_id, redis_queue):
+    key = '{}:{}'.format(content['item_id'], config_id)
+    if key not in ap_queue:
+        ap_queue.append(key)
     else:
         return False
     return True
 
 
-def set_hha_queue(content, redis_queue):
-    if content['_Id'] not in hha_queue:
-        hha_queue.append(content['_Id'])
+def set_hha_queue(content, config_id, redis_queue):
+    key = '{}:{}'.format(content['_Id'], config_id)
+    if key not in hha_queue:
+        hha_queue.append(key)
     else:
         return False
     return True
