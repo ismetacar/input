@@ -115,7 +115,7 @@ def get_agency_contents(config, asset_url, token, db, redis_queue):
 
     _config.pop('field_definitions', None)
     for content in agency_contents:
-        if not SET_TO_QUEUE[agency['name']](content, redis_queue):
+        if not SET_TO_QUEUE[agency['name']](content, str(config['_id']), redis_queue):
             continue
 
         cms_content = {
