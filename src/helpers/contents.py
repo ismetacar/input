@@ -383,12 +383,14 @@ def upload_image_for_hha(agency_name, content, field, asset_fields, asset_url, t
 
     img = []
 
-    if 'Files' not in content:
+    content_files = content.get('files')
+
+    if 'files' not in content or not content_files:
         return [] if multiple else {}
 
-    for _file in content.get('Files', []):
+    for _file in content.get('files', []):
         image_name = _file.get('_Id', 'id')
-        image_url = "http://i.hurimg.com/i/hurriyet/100/0x0/{}".format(_file.get('_Id', 'id'))
+        image_url = "http:{}".format(_file.get('path'))
         img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
         if not multiple:
             img = img[0]
