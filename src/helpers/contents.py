@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import logging
+
 import requests
 import xmltodict
 import os
@@ -463,62 +464,103 @@ def upload_image_for_ap(agency_name, content, field, asset_fields, asset_url, to
     return images
 
 
-def set_iha_queue(content, config_id, redis_queue):
-    key = '{}:{}'.format(content['HaberKodu'], config_id)
-    if key not in iha_queue:
-        iha_queue.append(key)
-    else:
-        return False
+def set_to_queue(content, agency, config, redis_queue):
+    unique_agency_content_fields = {
+        'HHA': {
+            'unique_id': '_Id',
+            'queue': hha_queue
+        },
+        'DHA': {
+            'unique_id': 'guid',
+            'queue': dha_queue
+        },
+        'IHA': {
+            'unique_id': 'HaberKodu',
+            'queue': iha_queue
+        },
+        'AP': {
+            'unique_id': 'item_id',
+            'queue': ap_queue
+        },
+        'Reuters': {
+            'unique_id': 'link',
+            'queue': reuters_queue
+        },
+        'AA': {
+            'unique_id': 'item_id',
+            'queue': aa_queue
+        }
+    }
 
-    return True
-
-
-def set_aa_queue(content, config_id, redis_queue):
-    key = '{}:{}'.format(content['item_id'], config_id)
-    if key not in aa_queue:
-        aa_queue.append(key)
-    else:
-        return False
-
-    return True
-
-
-def set_dha_queue(content, config_id, redis_queue):
-    key = '{}:{}'.format(content['guid'], config_id)
-    if key not in iha_queue:
-        dha_queue.append(key)
-    else:
-        return False
-
-    return True
-
-
-def set_reuters_queue(content, config_id, redis_queue):
-    key = '{}:{}'.format(content['link'], config_id)
-    if key not in iha_queue:
-        reuters_queue.append(key)
-    else:
-        return False
-
-    return True
-
-
-def set_ap_queue(content, config_id, redis_queue):
-    key = '{}:{}'.format(content['item_id'], config_id)
-    if key not in ap_queue:
-        ap_queue.append(key)
+    unique_id = content[unique_agency_content_fields[agency['name']]['unique_id']]
+    #: selected_queue = unique_agency_content_fields[agency['name']]['queue']
+    key = '{}:{}'.format(unique_id, str(config['_id']))
+    exists_key = redis_queue.get(key)
+    if not exists_key:
+        redis_queue.set(key, unique_id, ex=250000)
     else:
         return False
     return True
 
-
-def set_hha_queue(content, config_id, redis_queue):
-    key = '{}:{}'.format(content['_Id'], config_id)
-    if key not in hha_queue:
-        hha_queue.append(key)
-    else:
-        return False
-    return True
+#: def set_iha_queue(content, config_id, redis_queue):
+#:     key = '{}:{}'.format(content['HaberKodu'], config_id)
+#:     if key not in iha_queue:
+#:         iha_queue.append(key)
+#:     else:
+#:         return False
+#:
+#:     return True
+#:
+#:
+#: def set_aa_queue(content, config_id, redis_queue):
+#:     key = '{}:{}'.format(content['item_id'], config_id)
+#:     if key not in aa_queue:
+#:         aa_queue.append(key)
+#:     else:
+#:         return False
+#:
+#:     return True
+#:
+#:
+#: def set_dha_queue(content, config_id, redis_queue):
+#:     key = '{}:{}'.format(content['guid'], config_id)
+#:     if key not in iha_queue:
+#:         dha_queue.append(key)
+#:     else:
+#:         return False
+#:
+#:     return True
+#:
+#:
+#: def set_reuters_queue(content, config_id, redis_queue):
+#:     key = '{}:{}'.format(content['link'], config_id)
+#:     if key not in iha_queue:
+#:         reuters_queue.append(key)
+#:     else:
+#:         return False
+#:
+#:     return True
+#:
+#:
+#: def set_ap_queue(content, config_id, redis_queue):
+#:     key = '{}:{}'.format(content['item_id'], config_id)
+#:     if key not in ap_queue:
+#:         ap_queue.append(key)
+#:     else:
+#:         return False
+#:     return True
+#:
+#:
+#: def set_hha_queue(content, config_id, redis_queue):
+#:     key = '{}:{}'.format(content['_Id'], config_id)
+#:     if key not in hha_queue:
+#:         hha_queue.append(key)
+#:         print("girdim")
+#:         pprint(hha_queue)
+#:     else:
+#:         pprint(hha_queue)
+#:         return False
+#:     return True
 
 
 def image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password):
