@@ -6,5 +6,6 @@ conf = {
     "default_database": "input_local",
     "management_api": "http://management.blupoint.io/api",
     "asset_service": "http://assets.blupoint.io/img",
-    "redis_host": "localhost"
+    "redis_host": "localhost",
+    "redis_password": "***"
 }

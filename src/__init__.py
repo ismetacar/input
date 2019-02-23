@@ -12,7 +12,7 @@ def create_app(settings):
     app.db = MongoClient(settings['mongo_connection_string'], maxPoolSize=200).get_database(
         settings['default_database'])
 
-    app.redis_queue = Redis(host=settings['redis_host'], db=1)
+    app.redis_queue = Redis(host=settings['redis_host'], db=10, password=settings['redis_password'])
     app.config.update(
         CELERY_BROKER_URL=settings['mongo_connection_string']
     )
