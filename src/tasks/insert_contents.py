@@ -4,6 +4,8 @@ import json
 import logging
 
 import requests
+
+from src.helpers.contents import set_to_queue
 from src.helpers.critial_fields_helper import decrypt_critial_fields
 from src.helpers import contents
 
@@ -20,14 +22,14 @@ GET_CONTENTS = {
     'HHA': contents.get_content_from_hha
 }
 
-SET_TO_QUEUE = {
-    'IHA': contents.set_iha_queue,
-    'DHA': contents.set_dha_queue,
-    'AA': contents.set_aa_queue,
-    'Reuters': contents.set_reuters_queue,
-    'AP': contents.set_ap_queue,
-    'HHA': contents.set_hha_queue
-}
+#: SET_TO_QUEUE = {
+#:     'IHA': contents.set_iha_queue,
+#:     'DHA': contents.set_dha_queue,
+#:     'AA': contents.set_aa_queue,
+#:     'Reuters': contents.set_reuters_queue,
+#:     'AP': contents.set_ap_queue,
+#:     'HHA': contents.set_hha_queue
+#: }
 
 GET_IMAGE = {
     'IHA': contents.upload_image_for_iha,
@@ -115,7 +117,8 @@ def get_agency_contents(config, asset_url, token, db, redis_queue):
 
     _config.pop('field_definitions', None)
     for content in agency_contents:
-        if not SET_TO_QUEUE[agency['name']](content, str(config['_id']), redis_queue):
+        #: if not SET_TO_QUEUE[agency['name']](content, str(config['_id']), redis_queue):
+        if not set_to_queue(content, agency, config, redis_queue):
             continue
 
         cms_content = {
