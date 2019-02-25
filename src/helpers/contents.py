@@ -213,7 +213,7 @@ def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, t
         if asset_field['field_id'] == field:
             multiple = asset_field['multiple']
 
-    img = []
+    images = []
 
     if "media:content" not in content:
         return [] if multiple else {}
@@ -228,12 +228,14 @@ def upload_image_for_iha(agency_name, content, field, asset_fields, asset_url, t
     for media in images_array:
         image_url = media['@url']
         image_name = media['@ResimKodu']
-        img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+        image_response = image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
+        if image_response:
+            images.append(image_response)
         if not multiple:
-            img = img[0]
+            images = images[0]
             break
 
-    return img
+    return images
 
 
 def upload_image_for_aa(agency_name, content, field, asset_fields, asset_url, token, username, password):
@@ -288,9 +290,9 @@ def upload_image_for_aa(agency_name, content, field, asset_fields, asset_url, to
                 image_id = image['@residref']
                 image_title = image['@residref']
 
-                images.append(image_uploader(
-                    agency_name, image_id, image_title, asset_url, token, multiple, username, password)
-                )
+                image_response = image_uploader(agency_name, image_id, image_title, asset_url, token, multiple, username, password)
+                if image_response:
+                    images.append(image_response)
 
     return images
 
@@ -302,7 +304,7 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
         if asset_field['field_id'] == field:
             multiple = asset_field['multiple']
 
-    img = []
+    images = []
 
     if 'photos' not in content:
         return [] if multiple else {}
@@ -317,12 +319,14 @@ def upload_image_for_dha(agency_name, content, field, asset_fields, asset_url, t
     for _file in images_array:
         image_url = str(_file)
         image_name = os.path.splitext(image_url.split("/")[-1])[0]
-        img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+        image_response = image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
+        if image_response:
+            images.append(image_response)
         if not multiple:
-            img = img[0]
+            images = images[0]
             break
 
-    return img
+    return images
 
 
 def upload_image_for_reuters(agency_name, content, field, asset_fields, asset_url, token, username, password):
@@ -369,9 +373,8 @@ def upload_image_for_reuters(agency_name, content, field, asset_fields, asset_ur
                 image_url = image['@url']
                 image_title = image['@url'].split('tag:reuters.com,')[-1]
 
-                images.append(image_uploader(
-                    agency_name, image_url, image_title, asset_url, token, multiple, username, password)
-                )
+                image_response = image_uploader(agency_name, image_url, image_title, asset_url, token, multiple, username, password)
+                images.append(image_response)
 
     return images
 
@@ -382,7 +385,7 @@ def upload_image_for_hha(agency_name, content, field, asset_fields, asset_url, t
         if asset_field['field_id'] == field:
             multiple = asset_field['multiple']
 
-    img = []
+    images = []
 
     content_files = content.get('files')
 
@@ -392,12 +395,14 @@ def upload_image_for_hha(agency_name, content, field, asset_fields, asset_url, t
     for _file in content.get('files', []):
         image_name = _file.get('_Id', 'id')
         image_url = "http:{}".format(_file.get('path'))
-        img.append(image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password))
+        image_response = image_uploader(agency_name, image_url, image_name, asset_url, token, multiple, username, password)
+        if image_response:
+            images.append(image_response)
         if not multiple:
-            img = img[0]
+            images = images[0]
             break
 
-    return img
+    return images
 
 
 def upload_image_for_ap(agency_name, content, field, asset_fields, asset_url, token, username, password):
@@ -456,10 +461,9 @@ def upload_image_for_ap(agency_name, content, field, asset_fields, asset_url, to
                     continue
                 image_url = image['@href']
                 image_title = image['apcm:Characteristics']['@OriginalFileName']
-
-                images.append(image_uploader(
-                    agency_name, image_url, image_title, asset_url, token, multiple, username, password)
-                )
+                image_response = image_uploader(agency_name, image_url, image_title, asset_url, token, multiple, username, password)
+                if image_response:
+                    images.append(image_response)
 
     return images
 
@@ -593,8 +597,6 @@ def image_uploader(agency_name, image_url, image_name, asset_url, token, multipl
 
     response = requests.post(asset_url, files=files, headers=headers)
 
-    if response.status_code != 200:
-        return [] if multiple else {}
-
-    response_json = json.loads(response.text)
-    return response_json['data']['items'][0]
+    if response.ok:
+        response_json = json.loads(response.text)
+        return response_json['data']['items'][0]
