@@ -501,7 +501,7 @@ def set_to_queue(content, agency, config, redis_queue):
     key = '{}:{}'.format(unique_id, str(config['_id']))
     exists_key = redis_queue.get(key)
     if not exists_key:
-        redis_queue.set(key, unique_id, ex=250000)
+        redis_queue.set(key, unique_id, ex=600000)
     else:
         return False
     return True
